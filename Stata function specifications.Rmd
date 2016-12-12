@@ -1,0 +1,127 @@
+---
+title: "clubSandwich-Stata-functions"
+author: "James E. Pustejovsky"
+date: "December 12, 2016"
+output: html_document
+---
+
+# Task 1: clubSandwich versions of reg and areg
+
+Develop a command to fit linear regressions by OLS/WLS, calculate the clubSandwich standard errors, and calculate small-sample t-tests for each coefficient. The command should:
+
+* allow for factor variables via `xi:`.
+* have an option to absorb fixed effects, as in the `areg` command.
+* work with `pweight`s and `aweight`s.
+* _disregard absorbed fixed effects_ when calculating the adjustment matrices, degrees of freedom, etc. 
+* save the abjustment matrices and any other required information for calculating F-tests based on the fitted model.
+
+Suggested syntax is as follows:
+```{}
+reg_sandwich depvar [indepvars] [if] [in] [weight], cluster(varname) [absorb(varname)]
+```
+
+If the `absorb` option is present, then the model should be fit as in `areg`. If the option is absent, then the model should be fit as in `reg`. If weights are included, the model should be fit via WLS. The working variance matrix used to calculate the adjustment matrices will depend on which type of weights are used:
+
+* If weights are not used, then the working variance matrix should be an identity matrix.
+* If `pweight`s are used, then the working variance matrix should be an identity matix.
+* If `aweight`s are used, then the working variance matrix should be diagonal with diagonal entries equal to the inverses of the weights (i.e., we assume that the weights are inverse-variance). 
+
+To verify that the command is correct, replicate the following analysis:
+
+```{r, message = FALSE}
+library(haven)
+library(dplyr)
+library(clubSandwich)
+library(plm)
+
+data(MortalityRates)
+write_dta(MortalityRates, path = "MortalityRates.dta")
+
+MV_Mortality <- filter(MortalityRates, cause=="Motor Vehicle")
+
+# model specification
+
+specification <- mrate ~ 0 + legal + beertaxa + beerpercap + winepercap + factor(year)
+  
+# unweighted
+ols_pooled <- lm(specification, data = MV_Mortality)
+coef_test(ols_pooled, vcov = "CR2", cluster = MV_Mortality$state)
+
+# a-weighted
+wls_pooled <- lm(specification, weights = pop, data = MV_Mortality)
+coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+
+# p-weighted
+coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)
+
+```
+
+To check that absorption is working correctly, replicate the following analysis while absorbing the state fixed effects:
+
+```{r, message = FALSE}
+
+# unweighted
+ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year"))
+coef_test(ols_within, vcov = "CR2")
+
+# a-weighted
+wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop, data = MV_Mortality)
+coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+
+# p-weighted
+coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
+
+```
+
+# Task 2: clubSandwich F-test
+
+Develop a post-estimation command for testing multiple linear constraints on the regression specification, using the small-sample F-test developed in Pustejovsky & Tipton (2016). The command should follow the same basic syntax as the `test` command:
+
+```{}
+test_sandwich <spec> [<spec> ...]
+```
+
+where `<spec>` may be a `coeflist` or a set of expressions `exp = exp [= exp ...]`. As with your work on `robumeta`, it may make sense to implement the t-tests in Task 1 using the `test_sandwich` command. 
+
+To verify that the command is correct, replicate the following analysis:
+```{r}
+constraints <- c(combn(4,2,simplify=FALSE), combn(4,3,simplify = FALSE), list(1:4))
+
+# unweighted, without state effects
+Wald_test(ols_pooled, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state) %>% 
+  bind_rows()
+
+# a-weighted, without state effects
+Wald_test(wls_pooled, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE) %>% 
+  bind_rows()
+
+# p-weighted, without state effects
+Wald_test(wls_pooled, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE) %>% 
+  bind_rows()
+
+# unweighted, with state effects
+Wald_test(ols_within, constraints = constraints, 
+          vcov = "CR2") %>% 
+  bind_rows()
+
+# a-weighted, with state effects
+Wald_test(wls_within, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE) %>% 
+  bind_rows()
+
+# p-weighted, with state effects
+Wald_test(wls_within, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE) %>% 
+  bind_rows()
+
+```
+
+# R session information
+
+```{r}
+sessionInfo()
+```
+
