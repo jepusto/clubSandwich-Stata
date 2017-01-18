@@ -39,6 +39,10 @@ program define reg_sandwich, eclass sortpreserve
 		* absorb, use areg
 		local main_function = "areg"
 		local absorb_call = "absorb(`absorb')"
+		if "`constant'"!="" {
+			di as error "absorb and noconstant cannot be used simultaneously"
+			exit 198
+		}
 	} 
     
 	** determine weights
