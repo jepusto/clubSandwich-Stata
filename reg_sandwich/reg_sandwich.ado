@@ -26,7 +26,7 @@ program define reg_sandwich, eclass sortpreserve
 	[aweight pweight],  ///
     cluster(varlist max=1 numeric) ///
 	[absorb(varlist max=1 numeric)] ///
-	[noCONStant]
+	[noCONstant]
 	
 	** determine main function
 	capture confirm existence `absorb'
