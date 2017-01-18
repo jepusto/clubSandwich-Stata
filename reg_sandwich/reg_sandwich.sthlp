@@ -72,9 +72,9 @@ HERE COMES THE DETAILED DESCRIPTION.
 {phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year, nocon cluster(state)}{p_end}
 {phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [aweight=pop], nocon cluster(state)}{p_end}
 {phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [pweight=pop], nocon cluster(state)}{p_end}
-{phang}{cmd:. xi: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year, nocon cluster(state) absorb(state)}{p_end}
-{phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [aweight=pop], nocon cluster(state) absorb(state)}{p_end}
-{phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [pweight=pop], nocon cluster(state) absorb(state)}{p_end}
+{phang}{cmd:. xi: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year, cluster(state) absorb(state)}{p_end}
+{phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [aweight=pop], cluster(state) absorb(state)}{p_end}
+{phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [pweight=pop], cluster(state) absorb(state)}{p_end}
 
 
 
