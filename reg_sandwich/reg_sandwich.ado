@@ -36,6 +36,13 @@ program define reg_sandwich, eclass sortpreserve
     local t `1'
     macro shift
     local x `*'
+	
+	* Count valid observations and check matsize
+	qui count if `touse'
+    local nobs = r(N)
+	if c(matsize)<`nobs' {
+		set matsize `nobs'
+	}
 	** determine main function
 	capture confirm existence `absorb'
 	if _rc == 6{
@@ -87,4 +94,20 @@ program define reg_sandwich, eclass sortpreserve
 	noisily capture: `main_function' `t' `x'  `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'
 	
 	
+	*capture ids
+    quietly : gen double `clusternumber' = `cluster' if `touse'
+    quietly sort `clusternumber'
+    quietly : levelsof `clusternumber', local(idlist)
+	
+	*count ids, create macro m, number of studies
+    local m = 0
+    foreach j in `idlist' {
+        local ++m
+    }
+	
+	* double check set matsize:
+	if `nobs'<`m'*`p'{
+		local temp = `m'*`p'
+		set matsize `temp'
+	}
 end
