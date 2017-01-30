@@ -181,7 +181,15 @@ program define reg_sandwich, eclass sortpreserve
 	} 
 	else {
 		* weights, 
-		quietly : gen double `wfinal' = 1/`exp' if `touse'
+		if "`weight'"=="aweight"{
+			local den = substr("`exp'",2,.)
+			quietly : gen double `wfinal' = 1/`den' if `touse'
+		}
+		else{
+			quietly : gen double `wfinal' = 1 if `touse'
+		}
+		
+	
 	}
 	
 	if "`constant'"=="" {
