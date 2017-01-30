@@ -514,9 +514,9 @@ program define reg_sandwich, eclass sortpreserve
 
         display %12s abbrev("`v'",12)   _col(14) "{c |}" ///
                                         _col(16) "`problem'" ///
-                                        _col(21) %5.4f `effect' ///
-                                        _col(29) %5.4f sqrt(`variance') ///
-                                        _col(40) %5.4f `dof' ///
+                                        _col(21) %5.3f `effect' ///
+                                        _col(29) %5.2f sqrt(`variance') ///
+                                        _col(40) %5.2f `dof' ///
                                         _col(50) %5.4f 2*ttail(`dof',abs(`effect'/sqrt(`variance'))) ///
                                         _col(60) %5.4f `effect' - invttail(`dof',((100-`level')/100)/2)*sqrt(`variance') ///
                                         _col(70) %5.4f `effect' + invttail(`dof',((100-`level')/100)/2)*sqrt(`variance')
@@ -539,9 +539,9 @@ program define reg_sandwich, eclass sortpreserve
 
         display %12s abbrev("`v'",12)   _col(14) "{c |}" ///
                                         _col(16) "`problem'" ///
-                                        _col(21) %5.4f `effect' ///
-                                        _col(29) %5.4f sqrt(`variance') ///
-                                        _col(40) %5.4f `dof' ///
+                                        _col(21) %5.3f `effect' ///
+                                        _col(29) %5.2f sqrt(`variance') ///
+                                        _col(40) %5.2f `dof' ///
                                         _col(50) %5.4f 2*ttail(`dof',abs(`effect'/sqrt(`variance'))) ///
                                         _col(60) %5.4f `effect' - invttail(`dof',((100-`level')/100)/2)*sqrt(`variance') ///
                                         _col(70) %5.4f `effect' + invttail(`dof',((100-`level')/100)/2)*sqrt(`variance')
