@@ -28,6 +28,9 @@ program define reg_sandwich, eclass sortpreserve
 	[absorb(varlist max=1 numeric)] ///
 	[noCONstant]
 	
+	*mark sample
+    marksample touse
+	
 	** determine main function
 	capture confirm existence `absorb'
 	if _rc == 6{
@@ -58,7 +61,8 @@ program define reg_sandwich, eclass sortpreserve
 	
 	
 	** call regression:
-	disp "`main_function' `varlist' `weight_call', `constant' cluster(`cluster') `absorb_call'"
-	`main_function' `varlist' `weight_call', `constant' cluster(`cluster') `absorb_call'
+	disp "`main_function' `varlist' `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'"
+	`main_function' `varlist' `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'
+	
 	
 end
