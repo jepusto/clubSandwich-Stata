@@ -174,14 +174,15 @@ program define reg_sandwich, eclass sortpreserve
 	else {
 		* weights = WLS
 		local model_weights = substr("`exp'",2,.)
-		quietly : gen double `wfinal' = `model_weights' if `touse'
 		
-		if "`weight'"=="aweight"{			
+		if "`weight'"=="aweight"{	
+			quietly : gen double `wfinal' = 1 if `touse'
 			qui: gen double `variance' = 1/`model_weights'  if `touse'
 		}
 		else{
 		* p-weights
 		* Working variance is I
+			quietly : gen double `wfinal' = `model_weights' if `touse'
 			qui: gen double `variance' = 1 if `touse'
 		}
 		
