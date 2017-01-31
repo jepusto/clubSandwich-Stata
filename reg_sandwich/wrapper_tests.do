@@ -17,8 +17,8 @@ capture log close
 log using "wrapper_tests_log.txt", replace text
 ***********************************************
 display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
-display "WARNING: VCOV=CR2 is not implemented yet, so the st errors will be of"
-display "The goal of theses tests is to check if the coefficients are being properly calculated"
+display "WARNING: VCOV=CR2 is not FULLY implemented yet, so the st errors will be of"
+display "The goal of theses tests is to check if the coefficients are being properly calculated, and for OLS, and p-weights if it matches"
 display "DateTime: $S_DATE $S_TIME"
 
 use "MortalityRates", replace
