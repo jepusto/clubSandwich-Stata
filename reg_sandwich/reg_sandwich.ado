@@ -166,6 +166,8 @@ program define reg_sandwich, eclass sortpreserve
 	*cluster average variance
 	*******
 	qui: gen double `variance' = 1 if `touse'
+	
+	
 	*********
 	quietly : by `clusternumber', sort rc0: egen double `v_mean' = mean(`variance') if `touse'
 	*number of cases per cluster
@@ -185,13 +187,14 @@ program define reg_sandwich, eclass sortpreserve
 		local weights_display = ", unweighted."
 	} 
 	else {
-		* weights, 	
-		if "`weight'"=="aweight"{
-			local den = substr("`exp'",2,.)
-			quietly : gen double `wfinal' = 1/`den' if `touse'
+		* weights, 
+		local den = substr("`exp'",2,.)
+		if "`weight'"=="aweight"{			
+			quietly : gen double `wfinal' = `den' if `touse'
 		}
 		else{
-			quietly : gen double `wfinal' = 1 if `touse'
+		* p-weights
+			quietly : gen double `wfinal' = `den' if `touse'
 		}
 		
 	
