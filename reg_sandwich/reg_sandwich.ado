@@ -163,42 +163,41 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	
+	*weights & variance:
+	capture confirm existence `weight'
+	if _rc == 6{
+		* no weights = OLS
+		quietly : gen double `wfinal' = 1 if `touse'
+		* Working variance is I
+		qui: gen double `variance' = 1 if `touse'
+	} 
+	else {
+		* weights = WLS
+		local model_weights = substr("`exp'",2,.)
+		quietly : gen double `wfinal' = `model_weights' if `touse'
+		
+		if "`weight'"=="aweight"{			
+			qui: gen double `variance' = 1/`model_weights'  if `touse'
+		}
+		else{
+		* p-weights
+		* Working variance is I
+			qui: gen double `variance' = 1 if `touse'
+		}
+		
+	
+	}
+	
 	*cluster average variance
 	*******
-	qui: gen double `variance' = 1 if `touse'
-	
-	
-	*********
 	quietly : by `clusternumber', sort rc0: egen double `v_mean' = mean(`variance') if `touse'
 	*number of cases per cluster
 	quietly : by `clusternumber', sort rc0: egen double `v_n' = count(`variance') if `touse'
 				quietly sum `v_n' if `touse'
 				scalar `min_n' = r(min) 
 				scalar `max_n' = r(max)
-	*cluster constant weight
-	quietly : gen double `clusterweight' = 1 /(`v_n' * `v_mean') if `touse'
-
-
-	*weights:
-	capture confirm existence `weight'
-	if _rc == 6{
-		* no weights
-		quietly : gen double `wfinal' = 1 if `touse'
-		local weights_display = ", unweighted."
-	} 
-	else {
-		* weights, 
-		local den = substr("`exp'",2,.)
-		if "`weight'"=="aweight"{			
-			quietly : gen double `wfinal' = `den' if `touse'
-		}
-		else{
-		* p-weights
-			quietly : gen double `wfinal' = `den' if `touse'
-		}
-		
 	
-	}
+
 	
 	if "`constant'"=="" {
 		mkmat `x' `cons' if `touse', matrix(`X')
@@ -215,6 +214,7 @@ program define reg_sandwich, eclass sortpreserve
 	matrix `M' = invsym(`X'' * `W' * `X')
 	
 	mkmat `v_mean'   if `touse', matrix(`V')
+	
 	matrix `V' = diag(`V')
 	
 	matrix `MXWVWXM' =  `M'*`X''*`W'*`V'*`W'*`X'*`M'
