@@ -87,11 +87,13 @@ program define reg_sandwich, eclass sortpreserve
 		* no absorb, use default reg
 		local main_function = "reg"
 		local absorb_call = ""
+		local absorb_call_display = ""
 	} 
 	else {
 		* absorb, use areg
 		local main_function = "areg"
 		local absorb_call = "absorb(`absorb')"
+		local absorb_call_display = ", with absorb option"
 		if "`constant'"!="" {
 			di as error "absorb and noconstant cannot be used simultaneously"
 			exit 198
@@ -103,10 +105,12 @@ program define reg_sandwich, eclass sortpreserve
 	if _rc == 6{
 		* no weights
 		local weight_call = ""
+		local main_call_display = "OLS"
 	} 
 	else {
-		* weights, use areg
+		* weights
 		local weight_call = "[`weight'`exp']"
+		local main_call_display = "WLS (`weight's)"
 	}
 	
 	*collinearity 
@@ -178,9 +182,10 @@ program define reg_sandwich, eclass sortpreserve
 	if _rc == 6{
 		* no weights
 		quietly : gen double `wfinal' = 1 if `touse'
+		local weights_display = ", unweighted."
 	} 
 	else {
-		* weights, 
+		* weights, 	
 		if "`weight'"=="aweight"{
 			local den = substr("`exp'",2,.)
 			quietly : gen double `wfinal' = 1/`den' if `touse'
@@ -463,7 +468,7 @@ program define reg_sandwich, eclass sortpreserve
 	
      
     display _newline
-    display as text "Robust standard error estimation using " as result "`weighttype'" as text " model weights"
+    display as text "Robust standard error estimation using " as result "`main_call_display'`absorb_call_display'"
 
 
     *name the rows and columns of the matrixes
