@@ -188,7 +188,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	*cluster average variance
 	*******
-	quietly : by `clusternumber', sort rc0: egen double `v_mean' = mean(`variance') if `touse'
+	*quietly : by `clusternumber', sort rc0: egen double `v_mean' = mean(`variance') if `touse'
 	*number of cases per cluster
 	quietly : by `clusternumber', sort rc0: egen double `v_n' = count(`variance') if `touse'
 				quietly sum `v_n' if `touse'
@@ -211,7 +211,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	matrix `M' = invsym(`X'' * `W' * `X')
 	
-	mkmat `v_mean'   if `touse', matrix(`V')
+	mkmat `variance'   if `touse', matrix(`V')
 	
 	matrix `V' = diag(`V')
 	
@@ -252,17 +252,19 @@ program define reg_sandwich, eclass sortpreserve
 		*
 		* Vj - Vj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*W)*Vj + Xj*(M*X'*W*V*W*X*M)*Xj'
 			
-		sum `v_mean' if `touse' & `clusternumber' == `j', meanonly
-		local meanweight = r(mean)
+		*sum `variance' if `touse' & `clusternumber' == `j', meanonly
+		*local meanweight = r(mean)
 		
-		mkmat `v_mean' if `touse' & `clusternumber' == `j', matrix(`Vj')
+		mkmat `variance' if `touse' & `clusternumber' == `j', matrix(`Vj')
 		matrix `Vj' = diag(`Vj')  
 		
-		matrix `middle_Aj'=`Vj'-`Vj'*`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'*`Vj'+ `Xj'*`MXWVWXM'*`Xj''	
+		tempname D
+		matrix `D' = cholesky(`Vj')
+		matrix `middle_Aj'=`D''*(`Vj'-`Vj'*`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'*`Vj'+ `Xj'*`MXWVWXM'*`Xj'')*`D'
 		
 		matsqrt `middle_Aj'
 											
-		matrix `Aj' = (`meanweight'^.5)*inv(sq_`middle_Aj')
+		matrix `Aj' = `D'*inv(sq_`middle_Aj')*`D''
 		matrix drop sq_`middle_Aj'												
 		
 			
