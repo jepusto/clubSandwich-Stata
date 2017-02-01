@@ -138,9 +138,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	** prep for small sample reduced t-test:
 	* (based on robumetaMt12.ado:
-	
-
-	
+		
 	matrix p = rowsof(e(V))
 	local p = p[1,1]
 	
@@ -174,15 +172,14 @@ program define reg_sandwich, eclass sortpreserve
 	else {
 		* weights = WLS
 		local model_weights = substr("`exp'",2,.)
+		quietly : gen double `wfinal' = `model_weights' if `touse' 
 		
-		if "`weight'"=="aweight"{	
-			quietly : gen double `wfinal' = 1 if `touse'
+		if "`weight'"=="aweight"{				
 			qui: gen double `variance' = 1/`model_weights'  if `touse'
 		}
 		else{
 		* p-weights
 		* Working variance is I
-			quietly : gen double `wfinal' = `model_weights' if `touse'
 			qui: gen double `variance' = 1 if `touse'
 		}
 		
@@ -220,6 +217,8 @@ program define reg_sandwich, eclass sortpreserve
 	
 	matrix `MXWVWXM' =  `M'*`X''*`W'*`V'*`W'*`X'*`M'
 	matrix drop `V' 
+	matrix drop `W' `X'
+	
 	
 	/********************************************************************/
     /*    Variance covariance matrix estimation for standard errors     */
