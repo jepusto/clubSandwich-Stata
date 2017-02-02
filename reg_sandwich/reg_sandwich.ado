@@ -262,10 +262,15 @@ program define reg_sandwich, eclass sortpreserve
 		matrix `D' = cholesky(`Vj')
 		matrix `middle_Aj'=`D''*(`Vj'-`Vj'*`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'*`Vj'+ `Xj'*`MXWVWXM'*`Xj'')*`D'
 		
-		matsqrt `middle_Aj'
+		tempname inv_middle_Aj
+		matrix `inv_middle_Aj'= invsym(`middle_Aj')
+		
+		matsqrt `inv_middle_Aj'
+		matrix drop `inv_middle_Aj'
 											
-		matrix `Aj' = `D'*inv(sq_`middle_Aj')*`D''
-		matrix drop sq_`middle_Aj'												
+		matrix `Aj' = `D'*(sq_`inv_middle_Aj')*`D''
+		matrix drop sq_`inv_middle_Aj'	
+		
 		
 			
         mkmat `prime_resid' if `touse' & `clusternumber' == `j', matrix(`ej')
