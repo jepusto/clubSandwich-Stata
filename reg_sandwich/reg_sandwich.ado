@@ -263,7 +263,8 @@ program define reg_sandwich, eclass sortpreserve
 		matrix `middle_Aj'=`D''*(`Vj'-`Vj'*`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'*`Vj'+ `Xj'*`MXWVWXM'*`Xj'')*`D'
 		
 		tempname inv_middle_Aj
-		matrix `inv_middle_Aj'= invsym(`middle_Aj')
+		mata: st_matrix( "`inv_middle_Aj'", pinv( st_matrix( "`middle_Aj'")))
+		*matrix `inv_middle_Aj'= pinv(`middle_Aj')
 		
 		matsqrt `inv_middle_Aj'
 		matrix drop `inv_middle_Aj'
