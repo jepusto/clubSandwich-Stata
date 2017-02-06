@@ -381,12 +381,17 @@ program define reg_sandwich, eclass sortpreserve
 
 		}
 		else if "`type_VCR'" == "WLSp" {
+		
 			matrix `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant' = ///
 													`M'*`Xj''*`Wj'*`Aj'* ///
 													(`Bj')* ///
 													`Aj''*`Wj'*`Xj'*`M'' // p x p
 													
-			* save Pi_Pj_relevant later
+			matrix `P`current_jcountFtest'_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x p
+			
+			tempname VV`current_jcountFtest'
+			
+			matrix `VV`current_jcountFtest'' = `Wj'*`Xj'*`M' // kj x p
 		}
 		else if "`type_VCR'" == "WLSa" {
 			matrix `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant' = ///
@@ -418,76 +423,6 @@ program define reg_sandwich, eclass sortpreserve
 	
 
 	
-	if "`type_VCR'" == "WLSp"{
-		
-		qui: tab `clusternumber' if `touse', matrow(`cluster_list')
-		local upper =  (`m'-1)
-		
-		forvalues i = 1/`upper'{
-
-			if "`constant'"=="" {
-				mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`Xi')
-				matrix colnames `Xi' = `x' _cons
-			} 
-			else {
-				mkmat `x'  if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`Xi')
-				matrix colnames `Xi' = `x'
-			}
-			
-			mkmat `wfinal' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`Wi')
-			matrix `Wi' = diag(`Wi')  
-			
-			mkmat `theta' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`Ti')
-			matrix `Ti' = diag(`Ti')  
-		
-			matrix `Bi'=`Ti'-`Wi'*`Xi'*`M'*`Xi''-`Xi'*`M'*`Xi''*`Wi'+ `Xi'*`MXWTWXM'*`Xi''
-			
-			mata: st_matrix( "`inv_Bi'", pinv( st_matrix( "`Bi'")))
-			
-			matsqrt `inv_Bi'
-			matrix drop `inv_Bi'
-		
-			matrix `Ai' = (sq_`inv_Bi')
-			local lower = (`i'+1)
-			
-			forvalues j = `lower'/`m'{
-			if "`constant'"=="" {
-					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`j',1], matrix(`Xj')
-					matrix colnames `Xj' = `x' _cons
-				} 
-				else {
-					mkmat `x'  if `touse' & `clusternumber' == `cluster_list'[`j',1], matrix(`Xj')
-					matrix colnames `Xj' = `x'
-				}
-				
-				mkmat `wfinal' if `touse' & `clusternumber' == `cluster_list'[`j',1], matrix(`Wj')
-				matrix `Wj' = diag(`Wj')  
-				
-				mkmat `theta' if `touse' & `clusternumber' == `cluster_list'[`j',1], matrix(`Tj')
-				matrix `Tj' = diag(`Tj')  
-		
-				
-				matrix `Bj'=`Tj'-`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'+ `Xj'*`MXWTWXM'*`Xj''
-				
-				mata: st_matrix( "`inv_Bj'", pinv( st_matrix( "`Bj'")))
-			
-				matsqrt `inv_Bj'
-				matrix drop `inv_Bj'
-			
-				matrix `Aj' = (sq_`inv_Bj')
-				
-				tempname P`i'_P`j'_relevant
-				
-				matrix `P`i'_P`j'_relevant' =  `M'*`Xi''*`Wi'*`Ai'* ///
-											( `Wi'*`Xi'*`M'*`Xj''   - `Xi'*`M'*`Xj''*`Wj'     + `Xi'*(`MXWTWXM')*`Xj'')* ///
-											`Aj''*`Wj'*`Xj'*`M'' //
-						
-				
-			}
-		}
-		
-			
-	}
 	*matrix drop `Aj' `Wj' `Xj' `middle_Aj'  `ej'
 		
 	* RVE estimator
@@ -495,7 +430,22 @@ program define reg_sandwich, eclass sortpreserve
 	
 	
 	* T-test, using as a special case of an F-test:
-
+		if "`type_VCR'" == "WLSp" {
+		
+			qui: tab `clusternumber' if `touse', matrow(`cluster_list')
+			forvalues i = 1/`m'{
+		
+				tempname X`i'
+				
+				if "`constant'"=="" {
+					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')
+				} 
+				else {
+					mkmat `x'  if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')
+				}
+			}
+	}
+	
 	matrix `_dfs' =  J(1,`p', 0) 
 							
 	forvalues i = 1/`m'{
@@ -536,7 +486,12 @@ program define reg_sandwich, eclass sortpreserve
 					matrix  `PThetaP' = `P`i'_relevant'*`M'*`P`j'_relevant''														
 				}
 				else if "`type_VCR'" == "WLSp" {
-					matrix  `PThetaP' = `P`i'_P`j'_relevant'
+				
+					matrix  `PThetaP' = `P`i'_relevant'* ///
+										(-`VV`i''*`X`j'''-`X`i''*`VV`j''' + `X`i''*`MXWTWXM'*`X`j''')* ///
+										`P`j'_relevant''
+					
+					
 				}
 				else if "`type_VCR'" == "WLSa" {
 					matrix  `PThetaP' = `P`i'_relevant'*`M'*`P`j'_relevant''
