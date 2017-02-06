@@ -270,10 +270,10 @@ program define reg_sandwich, eclass sortpreserve
 		*
 		* Dj*[Tj - Tj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*Wj)*Tj + Xj*(M*X'*W*V*W*X*M)*Xj']*Dj
 		*
-		* For OLS this simplifies to:
+		* For OLS this simplifies to (Dj = I):
 		* Tj - Xj*M*Xj'
 		*
-		* For WLSp, this simplifies to:
+		* For WLSp, this simplifies to (Dj = I):
 		* Tj - Wj*Xj*M*Xj' - Xj*M*Xj'Wj + Xj'MXWWXM*Xj'
 		*
 		* For WLSa, this simplified to:
