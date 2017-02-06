@@ -2,13 +2,19 @@ clear
 clc
 
 load base_state_till_3
+% legal = legal(1:27,:);
+% beertaxa = beertaxa(1:27,:);
+% mrate = mrate(1:27,:);
+% pop = pop(1:27,:);
+% state = state(1:27,:);
 
 X = [legal beertaxa];
 
 n = size(X,1);
+%X = [ones(n,1) X];
 p = size(X,2);
 
-pop = pop./sum(pop)*n;
+%pop = pop./100;
 %% Choose 1:
 %W = eye(n);
 W = diag(pop);
@@ -46,14 +52,17 @@ for i = 1:size(clusters)
     I_H_i = I_H(loc,:);
     D_i = chol(theta_i);
     
-    %B_i = D_i*I_H_i*theta*I_H_i'*D_i';
-    B_i = D_i'*(theta_i-X_i*M*X_i')*D_i;
+    B_i = D_i*I_H_i*theta*I_H_i'*D_i';
+    %B_i = D_i'*(theta_i-X_i*M*X_i')*D_i;
+    %B_i = D_i'*I_H_i*theta_i*D_i;
     
-    A_i = D_i'*sqrtm(pinv(B_i))*D_i;
+    %A_i = D_i'*sqrtm(pinv(B_i))*D_i;
+    A_i = D_i'*sym_sqrt_MPinv(B_i)*D_i;
     XWAeeAWX = XWAeeAWX + X_i'*W_i*A_i*e_i*e_i'*A_i'*W_i*X_i;
     
     P(:,:,i) = I_H_i'*A_i*W_i*X_i*M;
     
+    % X_i'*W_i*A_i
 end
 
 VCR = M*XWAeeAWX*M;
