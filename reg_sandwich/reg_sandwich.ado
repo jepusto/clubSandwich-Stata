@@ -47,8 +47,9 @@ program define reg_sandwich, eclass sortpreserve
 	
    *specify the temporary variables used in the program
     tempvar keepers cons w wh wfinal prelim_hat prelim_resid  ///
-    prime_hat prime_resid v_mean v_n clusterweight clusternumber variance
-   
+    prime_hat prime_resid v_mean v_n clusterweight clusternumber variance ///
+	theta
+	   
     *specifiy the temporary scalars and matrixes
     tempname A1  A2  b   B1  B2  C1  C2  D   e   E   F   I   J    ///
         k   kw  kXJWX   kXWJX   omega_squared   omega_squared_o      ///
@@ -60,11 +61,11 @@ program define reg_sandwich, eclass sortpreserve
         XJWX    XJX     XJX     XW2X    XW2X    XWeeWX  XWJWX   XWJX     ///
         XWT     XWX     XX ///
 		M ///
-		MXWVWXM ///
+		MXWTWXM ///
 		XWAeeAWX Big_B_relevant Big_BSigmaB_relevant Big_VV ///
-		Aj Wj Xj middle_Aj ej ///
+		Aj Wj Xj middle_Aj ej Bj ///
 		sq_Wj ///
-		Vj ///
+		Tj ///
 		make_it_fit ///
 		_dfs middle_Omega ///
 		cluster_list ///
@@ -72,9 +73,9 @@ program define reg_sandwich, eclass sortpreserve
 		C_ttest ///
 		Omega_ttest matrix_ttest ///
 		temp_calc ///
-		prob 
+		prob  ///
+		T Dj inv_Bj
 
-	
 	*generate constant term
 	if "`constant'"=="" {
 		quietly : gen double `cons' = 1 if `touse'
@@ -167,7 +168,8 @@ program define reg_sandwich, eclass sortpreserve
 		* no weights = OLS
 		quietly : gen double `wfinal' = 1 if `touse'
 		* Working variance is I
-		qui: gen double `variance' = 1 if `touse'
+		qui: gen double `theta' = 1 if `touse'
+		local type_VCR = "OLS"
 	} 
 	else {
 		* weights = WLS
@@ -175,12 +177,14 @@ program define reg_sandwich, eclass sortpreserve
 		quietly : gen double `wfinal' = `model_weights' if `touse' 
 		
 		if "`weight'"=="aweight"{				
-			qui: gen double `variance' = 1/`model_weights'  if `touse'
+			qui: gen double `theta' = 1/`model_weights'  if `touse'
+			local type_VCR = "WLSa"
 		}
 		else{
 		* p-weights
 		* Working variance is I
-			qui: gen double `variance' = 1 if `touse'
+			qui: gen double `theta' = 1 if `touse'
+			local type_VCR = "WLSp"
 		}
 		
 	
@@ -188,9 +192,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	*cluster average variance
 	*******
-	*quietly : by `clusternumber', sort rc0: egen double `v_mean' = mean(`variance') if `touse'
-	*number of cases per cluster
-	quietly : by `clusternumber', sort rc0: egen double `v_n' = count(`variance') if `touse'
+	quietly : by `clusternumber', sort rc0: egen double `v_n' = count(`theta') if `touse'
 				quietly sum `v_n' if `touse'
 				scalar `min_n' = r(min) 
 				scalar `max_n' = r(max)
@@ -206,18 +208,34 @@ program define reg_sandwich, eclass sortpreserve
 		matrix colnames `X' = `x'
 	}
 	
-	mkmat `wfinal' if `touse', matrix(`W')
-	matrix `W' = diag(`W')
+	if "`type_VCR'" =="OLS"{
+		matrix `M' = invsym(`X'' * `X')
+	} 
+	else {
+		mkmat `wfinal' if `touse', matrix(`W')
+		matrix `W' = diag(`W')
 	
-	matrix `M' = invsym(`X'' * `W' * `X')
+		matrix `M' = invsym(`X'' * `W' * `X')
+	}
+		
 	
-	mkmat `variance'   if `touse', matrix(`V')
 	
-	matrix `V' = diag(`V')
+	if "`type_VCR'" == "WLSp" {	
+		matrix `MXWTWXM' =  `M'*`X''*`W'*`W'*`X'*`M'		
+	}
+	else if "`type_VCR'" == "WLSa" {
+		
+		mkmat `theta'   if `touse', matrix(`T')
+		matrix `T' = diag(`T')
+		matrix `MXWTWXM' =  `M'*`X''*`W'*`T'*`W'*`X'*`M'
+		matrix drop `T'
+	}
 	
-	matrix `MXWVWXM' =  `M'*`X''*`W'*`V'*`W'*`X'*`M'
-	matrix drop `V' 
-	matrix drop `W' `X'
+	if "`type_VCR'" ~="OLS"{
+		matrix drop `W' 
+	}
+	
+	matrix drop `X'
 	
 	
 	/********************************************************************/
@@ -234,9 +252,6 @@ program define reg_sandwich, eclass sortpreserve
     foreach j in `idlist' {
         *Aj parameter 
 		
-		mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
-		matrix `Wj' = diag(`Wj')  
-		
 		if "`constant'"=="" {
 			mkmat `x' `cons' if `touse' & `clusternumber' == `j', matrix(`Xj')
 			matrix colnames `Xj' = `x' _cons
@@ -245,39 +260,66 @@ program define reg_sandwich, eclass sortpreserve
 			mkmat `x'  if `touse' & `clusternumber' == `j', matrix(`Xj')
 			matrix colnames `Xj' = `x'
 		}
-				
+		
+		mkmat `theta' if `touse' & `clusternumber' == `j', matrix(`Tj')
+		matrix `Tj' = diag(`Tj')  
+		
 		
 		* we use that 
-		* (I-X*M*X'*W)j*V*(I-X*M*X'*W)j' = 
+		* Dj*[(I-X*M*X'*W)j*T*(I-X*M*X'*W)j']Dj = 
 		*
-		* Vj - Vj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*W)*Vj + Xj*(M*X'*W*V*W*X*M)*Xj'
+		* Dj*[Tj - Tj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*Wj)*Tj + Xj*(M*X'*W*V*W*X*M)*Xj']*Dj
+		*
+		* For OLS this simplifies to:
+		* Tj - Xj*M*Xj'
+		*
+		* For WLSp, this simplifies to:
+		* Tj - Wj*Xj*M*Xj' - Xj*M*Xj'Wj + Xj'MXWWXM*Xj'
+		*
+		* For WLSa, this simplified to:
+		* Dj*[Tj-XjM*Xj]*Dj
+		
+		
+		if "`type_VCR'" == "OLS" {
+			matrix `Bj'=`Tj'-`Xj'*`M'*`Xj''
+		}
+		else if "`type_VCR'" == "WLSp" {
+			mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
+			matrix `Wj' = diag(`Wj')  
+		
+			matrix `Bj'=`Tj'-`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'+ `Xj'*`MXWTWXM'*`Xj''
+		}
+		else if "`type_VCR'" == "WLSa" {
+			mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
+			matrix `Wj' = diag(`Wj')
+			matrix `Dj' = cholesky(`Tj')
+			matrix `Bj' = `Dj''*(`Tj'-`Xj'*`M'*`Xj'')*`Dj'
+		}
+		
+		mata: st_matrix( "`inv_Bj'", pinv( st_matrix( "`Bj'")))
 			
-		*sum `variance' if `touse' & `clusternumber' == `j', meanonly
-		*local meanweight = r(mean)
-		
-		mkmat `variance' if `touse' & `clusternumber' == `j', matrix(`Vj')
-		matrix `Vj' = diag(`Vj')  
-		
-		tempname D
-		matrix `D' = cholesky(`Vj')
-		matrix `middle_Aj'=`D''*(`Vj'-`Vj'*`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'*`Vj'+ `Xj'*`MXWVWXM'*`Xj'')*`D'
-		
-		tempname inv_middle_Aj
-		mata: st_matrix( "`inv_middle_Aj'", pinv( st_matrix( "`middle_Aj'")))
-		*matrix `inv_middle_Aj'= pinv(`middle_Aj')
-		
-		matsqrt `inv_middle_Aj'
-		matrix drop `inv_middle_Aj'
+		matsqrt `inv_Bj'
+		matrix drop `inv_Bj'
 											
-		matrix `Aj' = `D'*(sq_`inv_middle_Aj')*`D''
-		matrix drop sq_`inv_middle_Aj'	
+		if "`type_VCR'" == "WLSa" {
+			matrix `Aj' = `Dj'*(sq_`inv_Bj')*`Dj''
+		}
+		else {
+			matrix `Aj' = (sq_`inv_Bj')
+		}
+		matrix drop sq_`inv_Bj'	
 		
-		
-			
         mkmat `prime_resid' if `touse' & `clusternumber' == `j', matrix(`ej')
-		matrix `XWAeeAWX' = (`Xj'' * `Wj' * `Aj' * `ej' * `ej'' * `Aj' * `Wj' * `Xj') + `XWAeeAWX'
-
 		
+		if "`type_VCR'" == "OLS" {
+			matrix `XWAeeAWX' = (`Xj'' * `Aj' * `ej' * `ej'' * `Aj' * `Xj') + `XWAeeAWX'
+		}
+		else {
+		
+			matrix `XWAeeAWX' = (`Xj'' * `Wj' * `Aj' * `ej' * `ej'' * `Aj' * `Wj' * `Xj') + `XWAeeAWX'
+		}
+
+		/**
 		* F-test:
 		* Bj are defined in equation (9):
 		* Bj = Omega^(-1/2)*C*M*Xj*Wj*Aj*(Ik - X*M*X'*W)j
@@ -319,23 +361,23 @@ program define reg_sandwich, eclass sortpreserve
 		* (I-X*M*X'*W)i*V*(I-X*M*X'*W)j' = 
 		*
 		* if i==j
-		* Vj - Vj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*W)*Vj + Xj*(M*X'*W*V*W*X*M)*Xj' = middle_Aj
+		* Tj - Tj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*W)*Tj + Xj*(M*X'*W*V*W*X*M)*Xj' = middle_Aj
 		*
 		* if i!=j
-		* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Vj     + Xi*(M*X'*W*V*W*X*M)*Xj'
-		* we call VVj = Vj*Wj*Xj*M
+		* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Tj     + Xi*(M*X'*W*V*W*X*M)*Xj'
+		* we call VVj = Tj*Wj*Xj*M
 		tempname VV`current_jcountFtest' 
 		
-		matrix `VV`current_jcountFtest'' = `Vj'*`Wj'*`Xj'*`M' // kj x p
+		matrix `VV`current_jcountFtest'' = `Tj'*`Wj'*`Xj'*`M' // kj x p
 		
 		matrix `B`current_jcountFtest'_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
 		
 		matrix `B`current_jcountFtest'_Sigma_B`current_jcountFtest'_relevant' = ///
 													`M'*`Xj''*`Wj'*`Aj'* ///
-													(`middle_Aj')* ///
+													(`Bj')* ///
 													`Aj''*`Wj'*`Xj'*`M''
 						
-		matrix drop `Vj'
+		matrix drop `Tj'
 	
 		
 		* save for later
@@ -378,12 +420,14 @@ program define reg_sandwich, eclass sortpreserve
 			 
 			
 		}	
+		**/
     }
-	matrix drop `Aj' `Wj' `Xj' `middle_Aj'  `ej'
+	*matrix drop `Aj' `Wj' `Xj' `middle_Aj'  `ej'
 		
 	* RVE estimator
 	matrix `V' = `M' * `XWAeeAWX' * `M'
 	
+	/**
 	* T-test, using as a special case of an F-test:
 
 	matrix `_dfs' =  J(1,`p', 0) 
@@ -424,7 +468,7 @@ program define reg_sandwich, eclass sortpreserve
 			* (I-X*M*X'*W)i*V*(I-X*M*X'*W)j' = 
 			*
 			* if i!=j
-			* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Vj     + Xi*(M*X'*W*V*W*X*M)*Xj'
+			* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Tj     + Xi*(M*X'*W*V*W*X*M)*Xj'
 			* we call VVj = Vj*Wj*Xj*M
 
 				matrix `middle_BSigmaB' = -`VV`i''*`X`j'''-`X`i''*`VV`j''' + `X`i''*`middle_Omega'*`X`j'''
@@ -475,7 +519,7 @@ program define reg_sandwich, eclass sortpreserve
 	forvalues coefficient = 1/`p' {
 		matrix `_dfs'[1,`coefficient'] = 2/`_dfs'[1,`coefficient']
 	}
-		
+	**/	
 	
      
     display _newline
@@ -487,12 +531,12 @@ program define reg_sandwich, eclass sortpreserve
 	if "`constant'"=="" {	
 		matrix colnames `V' = `x' _cons
 		matrix rownames `V' = `x' _cons
-		matrix colnames `_dfs' = `x' _cons
+		*matrix colnames `_dfs' = `x' _cons
 	}
 	else {
 		matrix colnames `V' = `x' 
 		matrix rownames `V' = `x' 
-		matrix colnames `_dfs' = `x' 
+		*matrix colnames `_dfs' = `x' 
 	}
 	
 
@@ -526,7 +570,7 @@ program define reg_sandwich, eclass sortpreserve
     foreach v in `x' {
         scalar `effect' = `b'[1,`i']
         scalar `variance' = `V'[`i',`i']
-        scalar `dof' = `_dfs'[1,`i']
+        scalar `dof' = 1 //`_dfs'[1,`i']
 
         if `dof' < 4 {
             local problem "!"
