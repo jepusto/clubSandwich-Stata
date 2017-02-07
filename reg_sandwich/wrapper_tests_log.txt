@@ -2,20 +2,23 @@
       name:  <unnamed>
        log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\wrapper_tests_log.txt
   log type:  text
- opened on:   1 Feb 2017, 22:07:01
+ opened on:   7 Feb 2017, 06:41:00
 
 . ***********************************************
 . display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
 Tests if the wrapper reg_sandwich is calling the appropriate functions
 
-. display "WARNING: VCOV=CR2 is not FULLY implemented yet, so the st errors will be of"
-WARNING: VCOV=CR2 is not FULLY implemented yet, so the st errors will be of
+. display "WARNING: absorb is not fully implemented yet"
+WARNING: absorb is not fully implemented yet
 
-. display "The goal of theses tests is to check if the coefficients are being properly calculated, and for OLS, and p-weights if it matches"
-The goal of theses tests is to check if the coefficients are being properly calculated, and for OLS, and p-weights if it matches
+. display "The goal of theses tests is to check if the coefficients, se and dfs are being properly calculated"
+The goal of theses tests is to check if the coefficients, se and dfs are being properly calculated
+
+. display "To match aweights with R, R pop needs to be divided by 100"
+To match aweights with R, R pop needs to be divided by 100
 
 . display "DateTime: $S_DATE $S_TIME"
-DateTime:  1 Feb 2017 22:07:01
+DateTime:  7 Feb 2017 06:41:00
 
 . 
 . use "MortalityRates", replace
@@ -104,37 +107,37 @@ Robust standard error estimation using WLS (aweights)
 ------------------------------------------------------------------------------
        mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
 -------------+----------------------------------------------------------------
-       legal |      -4.236   4.87      232.81    0.3854    -13.8343  5.3619
-    beertaxa |      18.519   6.41      53.08     0.0056    5.6580    31.3792
-  beerpercap |      21.066   6.77      124.36    0.0023    7.6658    34.4662
-  winepercap |      -19.099 15.36      98.35     0.2166    -49.5752  11.3773
- _Iyear_1970 |      32.521   9.42      402.06    0.0006    13.9974   51.0438
- _Iyear_1971 |      31.172   9.52      402.51    0.0012    12.4489   49.8953
- _Iyear_1972 |      33.631   9.68      397.23    0.0006    14.6031   52.6591
- _Iyear_1973 |      34.222   9.15      383.79    0.0002    16.2317   52.2125
- _Iyear_1974 |      26.911   8.74      370.21    0.0022    9.7272    44.0940
- _Iyear_1975 |      25.503   8.87      366.51    0.0043    8.0613    42.9442
- _Iyear_1976 |      28.490   9.00      359.07    0.0017    10.7987   46.1806
- _Iyear_1977 |      30.288   8.89      346.03    0.0007    12.7952   47.7815
- _Iyear_1978 |      32.226   8.95      344.70    0.0004    14.6233   49.8295
- _Iyear_1979 |      32.083   9.21      340.29    0.0006    13.9681   50.1973
- _Iyear_1980 |      30.810   9.39      346.24    0.0011    12.3473   49.2723
- _Iyear_1981 |      26.118   9.59      356.59    0.0068    7.2590    44.9761
- _Iyear_1982 |      20.041   9.29      363.04    0.0316    1.7771    38.3050
- _Iyear_1983 |      19.604   9.56      367.71    0.0410    0.8096    38.3981
- _Iyear_1984 |      21.435   9.56      379.89    0.0256    2.6313    40.2383
- _Iyear_1985 |      20.476   9.49      392.56    0.0316    1.8193    39.1322
- _Iyear_1986 |      23.631   9.98      393.12    0.0184    4.0126    43.2488
- _Iyear_1987 |      20.785  10.03      387.44    0.0390    1.0580    40.5111
- _Iyear_1988 |      22.348  10.42      384.58    0.0326    1.8662    42.8294
- _Iyear_1989 |      16.759  10.21      384.64    0.1016    -3.3182   36.8364
- _Iyear_1990 |      15.310  10.04      373.97    0.1283    -4.4393   35.0586
- _Iyear_1991 |      13.689   9.92      382.84    0.1684    -5.8144   33.1920
- _Iyear_1992 |      8.715    9.91      398.49    0.3796    -10.7628  28.1923
- _Iyear_1993 |      9.717    9.87      397.53    0.3256    -9.6908   29.1238
- _Iyear_1994 |      11.295   9.57      400.97    0.2386    -7.5171   30.1081
- _Iyear_1995 |      10.576   9.44      402.42    0.2631    -7.9778   29.1293
- _Iyear_1996 |      10.964   9.76      406.09    0.2620    -8.2230   30.1515
+       legal |      -4.236   4.87      16.99     0.3967    -14.5148  6.0424
+    beertaxa |      18.519   6.41       7.42     0.0219    3.5300    33.5072
+  beerpercap |      21.066   6.77      11.34     0.0096    6.2189    35.9131
+  winepercap |      -19.099 15.36       6.25     0.2583    -56.3237  18.1258
+ _Iyear_1970 |      32.521   9.42      24.19     0.0021    13.0820   51.9592
+ _Iyear_1971 |      31.172   9.52      24.51     0.0032    11.5371   50.8071
+ _Iyear_1972 |      33.631   9.68      24.44     0.0019    13.6742   53.5880
+ _Iyear_1973 |      34.222   9.15      24.20     0.0010    15.3456   53.0986
+ _Iyear_1974 |      26.911   8.74      23.98     0.0051    8.8744    44.9467
+ _Iyear_1975 |      25.503   8.87      23.87     0.0084    7.1917    43.8138
+ _Iyear_1976 |      28.490   9.00      23.59     0.0042    9.9062    47.0731
+ _Iyear_1977 |      30.288   8.89      23.14     0.0024    11.8957   48.6811
+ _Iyear_1978 |      32.226   8.95      23.11     0.0015    13.7171   50.7357
+ _Iyear_1979 |      32.083   9.21      23.06     0.0020    13.0341   51.1313
+ _Iyear_1980 |      30.810   9.39      23.44     0.0032    11.4117   50.2079
+ _Iyear_1981 |      26.118   9.59      23.90     0.0119    6.3220    45.9131
+ _Iyear_1982 |      20.041   9.29      23.93     0.0412    0.8699    39.2122
+ _Iyear_1983 |      19.604   9.56      23.96     0.0513    -0.1235   39.3312
+ _Iyear_1984 |      21.435   9.56      24.37     0.0344    1.7131    41.1565
+ _Iyear_1985 |      20.476   9.49      24.59     0.0409    0.9152    40.0363
+ _Iyear_1986 |      23.631   9.98      24.42     0.0261    3.0546    44.2069
+ _Iyear_1987 |      20.785  10.03      24.16     0.0491    0.0841    41.4850
+ _Iyear_1988 |      22.348  10.42      23.89     0.0423    0.8428    43.8527
+ _Iyear_1989 |      16.759  10.21      23.71     0.1140    -4.3300   37.8482
+ _Iyear_1990 |      15.310  10.04      23.32     0.1409    -5.4514   36.0707
+ _Iyear_1991 |      13.689   9.92      23.18     0.1807    -6.8221   34.1997
+ _Iyear_1992 |      8.715    9.91      23.72     0.3879    -11.7460  29.1754
+ _Iyear_1993 |      9.717    9.87      23.11     0.3352    -10.6994  30.1324
+ _Iyear_1994 |      11.295   9.57      23.02     0.2499    -8.4995   31.0904
+ _Iyear_1995 |      10.576   9.44      23.20     0.2739    -8.9385   30.0899
+ _Iyear_1996 |      10.964   9.76      23.35     0.2727    -9.2102   31.1387
 ------------------------------------------------------------------------------
 
 . 
@@ -190,169 +193,30 @@ see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
 
 . 
-. ** with absorption: 
-. disp "WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level"
-WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level
-
-. 
-. * unweighted
-. * ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year"))
-. *xi: areg `specification', absorb(state) cluster(state)
-. xi: reg_sandwich `specification', absorb(state) cluster(state)
-i.year            _Iyear_1970-1996    (naturally coded; _Iyear_1970 omitted)
-
-
-Robust standard error estimation using OLS, with absorb option
-                                                      N Level 1     =     1361
-                                                      N Level 2     =       51
-                                                      Min Level 1 n =       11
-                                                      Max Level 1 n =       27
-                                                      Average       =    26.69
-------------------------------------------------------------------------------
-       mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
--------------+----------------------------------------------------------------
-       legal |      0.167    1.25      36.01     0.8950    -2.3749   2.7081
-    beertaxa |      -1.150   1.04       7.98     0.3002    -3.5454   1.2449
-  beerpercap |      32.100   1.45      19.89     0.0000    29.0651   35.1358
-  winepercap |      9.196    1.56      10.08     0.0001    5.7308    12.6621
- _Iyear_1971 |      -5.114   2.17      49.00     0.0225    -9.4754   -0.7516
- _Iyear_1972 |      -1.740   1.68      48.99     0.3051    -5.1135   1.6339
- _Iyear_1973 |      -3.233   1.54      48.87     0.0404    -6.3182   -0.1474
- _Iyear_1974 |      -13.262  2.42      48.68     0.0000    -18.1202  -8.4042
- _Iyear_1975 |      -16.796  2.24      48.61     0.0000    -21.3076  -12.2849
- _Iyear_1976 |      -12.649  2.12      48.59     0.0000    -16.9183  -8.3798
- _Iyear_1977 |      -11.438  2.09      48.58     0.0000    -15.6449  -7.2320
- _Iyear_1978 |      -12.759  2.34      48.56     0.0000    -17.4618  -8.0568
- _Iyear_1979 |      -13.844  2.61      48.65     0.0000    -19.0905  -8.5976
- _Iyear_1980 |      -14.871  2.27      48.72     0.0000    -19.4355  -10.3065
- _Iyear_1981 |      -20.604  2.47      48.73     0.0000    -25.5679  -15.6393
- _Iyear_1982 |      -26.880  2.76      48.75     0.0000    -32.4232  -21.3362
- _Iyear_1983 |      -28.919  2.54      48.78     0.0000    -34.0333  -23.8056
- _Iyear_1984 |      -25.577  2.57      48.86     0.0000    -30.7434  -20.4112
- _Iyear_1985 |      -27.994  2.75      48.90     0.0000    -33.5303  -22.4574
- _Iyear_1986 |      -23.928  2.38      49.69     0.0000    -28.7159  -19.1393
- _Iyear_1987 |      -26.212  2.68      49.72     0.0000    -31.6008  -20.8224
- _Iyear_1988 |      -23.774  2.86      49.69     0.0000    -29.5121  -18.0356
- _Iyear_1989 |      -29.079  2.78      49.69     0.0000    -34.6622  -23.4962
- _Iyear_1990 |      -29.778  2.51      49.64     0.0000    -34.8122  -24.7429
- _Iyear_1991 |      -31.210  2.98      49.67     0.0000    -37.2052  -25.2156
- _Iyear_1992 |      -35.356  3.10      49.67     0.0000    -41.5786  -29.1336
- _Iyear_1993 |      -35.254  3.39      49.68     0.0000    -42.0660  -28.4425
- _Iyear_1994 |      -31.649  2.93      49.69     0.0000    -37.5415  -25.7558
- _Iyear_1995 |      -33.356  2.92      49.70     0.0000    -39.2295  -27.4831
- _Iyear_1996 |      -33.870  2.80      49.70     0.0000    -39.5000  -28.2407
-       _cons |      28.597   2.45      34.82     0.0000    23.6261   33.5671
-------------------------------------------------------------------------------
-
-. 
-. * a-weighted
-. * wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop, data = MV_Mortality)
-. * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
-. *xi, noomit: areg `specification' [aweight=pop], absorb(state) cluster(state)
-. xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
-note: _Iyear_1996 omitted because of collinearity
-
-
-Robust standard error estimation using WLS (aweights), with absorb option
-                                                      N Level 1     =     1361
-                                                      N Level 2     =       51
-                                                      Min Level 1 n =       11
-                                                      Max Level 1 n =       27
-                                                      Average       =    26.69
-------------------------------------------------------------------------------
-       mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
--------------+----------------------------------------------------------------
-       legal |      2.213    1.04      232.81    0.0346    0.1621    4.2646
-    beertaxa |      4.833    1.09      53.08     0.0000    2.6529    7.0131
-  beerpercap |      24.158   0.72      124.36    0.0000    22.7296   25.5856
-  winepercap |      6.002    0.60      98.35     0.0000    4.8212    7.1826
- _Iyear_1970 |      24.785   1.99      592.69    0.0000    20.8684   28.7023
- _Iyear_1971 |      22.285   1.68      593.75    0.0000    18.9862   25.5847
- _Iyear_1972 |      24.119   2.04      587.76    0.0000    20.1098   28.1285
- _Iyear_1973 |      23.164   1.79      580.52    0.0000    19.6402   26.6887
- _Iyear_1974 |      14.498   1.43      586.44    0.0000    11.6946   17.3009
- _Iyear_1975 |      12.237   1.31      581.44    0.0000    9.6707    14.8029
- _Iyear_1976 |      14.899   1.31      577.87    0.0000    12.3293   17.4689
- _Iyear_1977 |      17.149   1.89      574.34    0.0000    13.4320   20.8663
- _Iyear_1978 |      18.336   1.73      580.82    0.0000    14.9419   21.7301
- _Iyear_1979 |      17.830   1.97      593.71    0.0000    13.9562   21.7045
- _Iyear_1980 |      16.026   1.81      597.88    0.0000    12.4774   19.5740
- _Iyear_1981 |      10.974   1.54      600.94    0.0000    7.9442    14.0044
- _Iyear_1982 |      4.819    1.40      591.92    0.0006    2.0737    7.5647
- _Iyear_1983 |      4.712    1.29      590.11    0.0003    2.1732    7.2509
- _Iyear_1984 |      6.691    1.75      595.20    0.0001    3.2616    10.1204
- _Iyear_1985 |      5.754    1.57      596.66    0.0003    2.6742    8.8334
- _Iyear_1986 |      9.604    1.33      596.25    0.0000    7.0015    12.2070
- _Iyear_1987 |      7.896    1.43      590.25    0.0000    5.0891    10.7027
- _Iyear_1988 |      10.159   1.17      581.11    0.0000    7.8555    12.4629
- _Iyear_1989 |      5.331    1.18      570.81    0.0000    3.0204    7.6416
- _Iyear_1990 |      3.915    1.16      572.98    0.0008    1.6298    6.2005
- _Iyear_1991 |      3.251    1.29      569.06    0.0120    0.7186    5.7844
- _Iyear_1992 |      -1.966   1.15      571.67    0.0872    -4.2205   0.2880
- _Iyear_1993 |      -0.563   1.16      569.33    0.6286    -2.8495   1.7228
- _Iyear_1994 |      0.981    1.42      573.11    0.4905    -1.8114   3.7732
- _Iyear_1995 |      0.102    1.37      576.45    0.9411    -2.5962   2.7994
-       _cons |      1.092    1.65      406.09    0.5089    -2.1545   4.3376
-------------------------------------------------------------------------------
-
-. 
-. * p-weighted
-. * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
-. *xi, noomit: areg `specification' [pweight=pop], absorb(state) cluster(state)
-. xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
-note: _Iyear_1996 omitted because of collinearity
-
-
-Robust standard error estimation using WLS (pweights), with absorb option
-                                                      N Level 1     =     1361
-                                                      N Level 2     =       51
-                                                      Min Level 1 n =       11
-                                                      Max Level 1 n =       27
-                                                      Average       =    26.69
-------------------------------------------------------------------------------
-       mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
--------------+----------------------------------------------------------------
-       legal |      2.213    1.08       6.38     0.0839    -0.3959   4.8225
-    beertaxa |      4.833    1.13       7.03     0.0036    2.1735    7.4925
-  beerpercap |      24.158   0.72       4.15     0.0000    22.1869   26.1283
-  winepercap | !    6.002    0.70       1.96     0.0141    2.9311    9.0727
- _Iyear_1970 |      24.785   2.02       7.39     0.0000    20.0512   29.5195
- _Iyear_1971 |      22.285   1.70       7.41     0.0000    18.3190   26.2520
- _Iyear_1972 |      24.119   2.07       7.29     0.0000    19.2750   28.9633
- _Iyear_1973 |      23.164   1.82       7.12     0.0000    18.8872   27.4416
- _Iyear_1974 |      14.498   1.43       7.00     0.0000    11.1241   17.8714
- _Iyear_1975 |      12.237   1.32       6.97     0.0000    9.1146    15.3590
- _Iyear_1976 |      14.899   1.32       6.92     0.0000    11.7790   18.0191
- _Iyear_1977 |      17.149   1.94       6.79     0.0001    12.5274   21.7709
- _Iyear_1978 |      18.336   1.77       6.82     0.0000    14.1281   22.5439
- _Iyear_1979 |      17.830   2.01       6.99     0.0000    13.0830   22.5777
- _Iyear_1980 |      16.026   1.84       7.09     0.0000    11.6806   20.3708
- _Iyear_1981 |      10.974   1.55       7.14     0.0002    7.3262    14.6224
- _Iyear_1982 |      4.819    1.41       7.06     0.0112    1.4803    8.1581
- _Iyear_1983 |      4.712    1.32       7.11     0.0087    1.6096    7.8145
- _Iyear_1984 |      6.691    1.79       7.13     0.0071    2.4700    10.9120
- _Iyear_1985 |      5.754    1.61       7.07     0.0089    1.9566    9.5509
- _Iyear_1986 |      9.604    1.35       7.00     0.0002    6.4203    12.7882
- _Iyear_1987 |      7.896    1.45       6.78     0.0011    4.4367    11.3551
- _Iyear_1988 |      10.159   1.18       6.56     0.0001    7.3273    12.9912
- _Iyear_1989 |      5.331    1.20       6.37     0.0038    2.4336    8.2284
- _Iyear_1990 |      3.915    1.18       6.37     0.0149    1.0587    6.7716
- _Iyear_1991 |      3.251    1.32       6.38     0.0468    0.0617    6.4413
- _Iyear_1992 |      -1.966   1.17       6.38     0.1403    -4.7837   0.8511
- _Iyear_1993 |      -0.563   1.17       6.34     0.6461    -3.3875   2.2608
- _Iyear_1994 |      0.981    1.45       6.38     0.5215    -2.5082   4.4701
- _Iyear_1995 |      0.102    1.39       6.38     0.9440    -3.2506   3.4538
-       _cons |      1.092    1.67       7.99     0.5328    -2.7705   4.9537
-------------------------------------------------------------------------------
-! dof is less than 4, p-value untrustworthy
-see Tipton, E. (in press) Small sample adjustments for robust variance
-estimation with meta-regression. Forthcoming in Psychological Methods.
-
-. 
+. /**
+> ** with absorption: 
+> disp "WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level"
+> 
+> * unweighted
+> * ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year"))
+> *xi: areg `specification', absorb(state) cluster(state)
+> xi: reg_sandwich `specification', absorb(state) cluster(state)
+> 
+> * a-weighted
+> * wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop, data = MV_Mortality)
+> * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+> *xi, noomit: areg `specification' [aweight=pop], absorb(state) cluster(state)
+> xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
+> 
+> * p-weighted
+> * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
+> *xi, noomit: areg `specification' [pweight=pop], absorb(state) cluster(state)
+> xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
+> **/
 . ****************
 . log close
       name:  <unnamed>
        log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\wrapper_tests_log.txt
   log type:  text
- closed on:   1 Feb 2017, 22:10:04
+ closed on:   7 Feb 2017, 06:42:16
 -------------------------------------------------------------------------------------------------------------------------------------------------

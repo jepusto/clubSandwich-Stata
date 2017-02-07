@@ -17,8 +17,9 @@ capture log close
 log using "wrapper_tests_log.txt", replace text
 ***********************************************
 display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
-display "WARNING: VCOV=CR2 is not FULLY implemented yet, so the st errors will be of"
-display "The goal of theses tests is to check if the coefficients are being properly calculated, and for OLS, and p-weights if it matches"
+display "WARNING: absorb is not fully implemented yet"
+display "The goal of theses tests is to check if the coefficients, se and dfs are being properly calculated"
+display "To match aweights with R, R pop needs to be divided by 100"
 display "DateTime: $S_DATE $S_TIME"
 
 use "MortalityRates", replace
@@ -48,6 +49,7 @@ xi, noomit: reg_sandwich `specification' [aweight=pop], nocons cluster(state)
 *xi, noomit: reg `specification' [pweight=pop], nocons cluster(state)
 xi, noomit: reg_sandwich `specification' [pweight=pop], nocons cluster(state)
 
+/**
 ** with absorption: 
 disp "WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level"
 
@@ -66,6 +68,6 @@ xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(st
 * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
 *xi, noomit: areg `specification' [pweight=pop], absorb(state) cluster(state)
 xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
-
+**/
 ****************
 log close
