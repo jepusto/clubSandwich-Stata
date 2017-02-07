@@ -140,7 +140,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	*capture ids
     quietly : gen double `clusternumber' = `cluster' if `touse'
-    quietly sort `clusternumber'
+    quietly sort `clusternumber' `_sortindex'
     quietly : levelsof `clusternumber', local(idlist)
 	
 	*count ids, create macro m, number of studies
@@ -186,7 +186,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	* count
 	*******
-	quietly : by `clusternumber', sort rc0: egen double `v_n' = count(`theta') if `touse'
+	quietly : by `clusternumber': egen double `v_n' = count(`theta') if `touse'
 				quietly sum `v_n' if `touse'				
 				scalar `min_n' = r(min) 
 				scalar `max_n' = r(max)
