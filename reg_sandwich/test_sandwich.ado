@@ -42,7 +42,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
     syntax [varlist(default=none)], [cons]
 	
 	tempname  C_Ftest ///
-			  js jt Var_d_st temp_calc Sum_Var_d_st ///
+			  gs gt Var_d_st temp_calc Sum_Var_d_st ///
 			 Omega_Ftest matrix_Ftest middle_Omega ///
 			 Big_P_relevant Big_PThetaP_relevant Pi_Theta_Pi Pi_relevant Pj_relevant Big_PP middle_PThetaP ///
 			 Fconstant ///
@@ -158,11 +158,11 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	* Cov(u1'*D*u2,u3'*D*u4) = sum (i=1 to m) sum(j = 1 to m) u1'*Bi*inv(W)*Bj'u4*u2'*Bi*inv(W)*Bj'*u3 + u1'*Bi*inv(W)*Bj'u3*u2'*Bi*inv(W)*Bj'*u4
 	* * where m = is the numberf of studies
 	*
-	* we additionally set u1 = u3 = js and u2 = u4 = jt, where vector js has entry s = 1 and 0 otherwise and jt is similarly defined
+	* we additionally set u1 = u3 = gs and u2 = u4 = gt, where vector gs has entry s = 1 and 0 otherwise and gt is similarly defined
 	*
 	* Therefore
-	* Cov(js'*D*jt,js'*D*jt) =  sum (i=1 to m) sum(j = 1 to m) js'*Bi*Theta*Bj'*jt*jt'*Bi*Theta*Bj'*js + js'*Bi*Theta*Bj'*js*jt'*Bi*Theta*Bj'*jt
-	* Var(d_st) = Var(js'*D*jt) = Cov(js'*D*jt,js'*D*jt) 
+	* Cov(gs'*D*gt,gs'*D*gt) =  sum (i=1 to m) sum(j = 1 to m) gs'*Bi*Theta*Bj'*gt*gt'*Bi*Theta*Bj'*gs + gs'*Bi*Theta*Bj'*gs*gt'*Bi*Theta*Bj'*gt
+	* Var(d_st) = Var(gs'*D*gt) = Cov(gs'*D*gt,gs'*D*gt) 
 	*
 	*
 	
@@ -182,11 +182,11 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		
 		local cluster = e(cluster)
 		quietly : gen double `clusternumber' = `cluster' if e(sample)
-		quietly sort `clusternumber'
+		quietly sort `clusternumber' `_sortindex'
 		qui: tab `clusternumber' if e(sample), matrow(`cluster_list')
 
 		
-		local starti = 0
+		local endi = 0
 		
 		forvalues i = 1/`m'{
  
@@ -200,11 +200,11 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 				mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')	
 			}
 			
-			local endi = `starti'+1
-			local starti =  `endi' + rowsof(`X`i'')-1
+			local starti = `endi'+1
+			local endi  =  `starti' + rowsof(`X`i'')-1
 			
-			matrix `PP`i'' = `Big_PP'[1.. rowsof(`X`i''),1..`p']
-			matrix `P`i'_relevant' = `Big_P_relevant'[1.. rowsof(`X`i''),1..`p']'
+			matrix `PP`i'' = `Big_PP'[`starti'..`endi',1..`p']
+			matrix `P`i'_relevant' = `Big_P_relevant'[`starti'..`endi',1..`p']'
 		}
 		
 	} 
@@ -222,20 +222,18 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	matrix `MXWTWXM' = e(MXWTWXM)
 	matrix `Omega_Ftest' = `C_Ftest'*`MXWTWXM'*`C_Ftest''
 	matsqrt `Omega_Ftest'
-	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')*`C_Ftest'
+	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')
 	
 	local Sum_Var_d_st = 0
 	
 	forvalues s = 1/`q_Ftest'{
 		
-		matrix `js' = J(`q_Ftest',1,0)
-		matrix `js'[`s',1]=1
+		matrix `gs' = `matrix_Ftest'[1..`q_Ftest',`s']
 		
 		* We use the symmetry here, since that Var_d_st = Var_d_ts
 		forvalues t = `s'/`q_Ftest'{
 			
-			matrix `jt' = J(`q_Ftest',1,0)
-			matrix `jt'[`t',1]=1
+			matrix `gt' = `matrix_Ftest'[1..`q_Ftest',`t']
 			
 			* get Var(d_st)
 			local Var_d_st = 0
@@ -248,9 +246,9 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 						local end = `start'+`p'-1
 						
 						matrix `Pi_Theta_Pi' = `Big_PThetaP_relevant'[`start'..`end',1..`p']
-						
-						matrix `temp_calc' = `js''*`matrix_Ftest'*`Pi_Theta_Pi'*`matrix_Ftest''*`jt'*`jt''*`matrix_Ftest'*`Pi_Theta_Pi'*`matrix_Ftest''*`js'+ ///
-											 `js''*`matrix_Ftest'*`Pi_Theta_Pi'*`matrix_Ftest''*`js'*`jt''*`matrix_Ftest'*`Pi_Theta_Pi'*`matrix_Ftest''*`jt'
+	
+						matrix `temp_calc' = `gs''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gt'*`gt''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gs'+ ///
+											 `gs''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gs'*`gt''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gt'
 
 					}
 					else {
@@ -268,7 +266,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 											
 							
 							matrix `middle_PThetaP' = -`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j'''
-
 							
 						}
 						else {
@@ -278,8 +275,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 						}
 						
 						
-						matrix `temp_calc' = `js''*`matrix_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`matrix_Ftest''*`jt'*`jt''*`matrix_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`matrix_Ftest''*`js' + ///
-											 `js''*`matrix_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`matrix_Ftest''*`js'*`jt''*`matrix_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`matrix_Ftest''*`jt'
+						matrix `temp_calc' = `gs''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gt'*`gt''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gs' + ///
+											 `gs''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gs'*`gt''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gt'
 					
 						matrix drop `middle_PThetaP'
 					}
@@ -290,8 +287,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 					else {
 						local Var_d_st = `Var_d_st' + 2*`temp_calc'[1,1]
 					}
-					
-					
 				} 
 			}
 			
@@ -321,8 +316,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	matrix `b' = e(b)
 	matrix `V' = e(V)
 	
-	matrix `z_Ftest' = inv(sq_`Omega_Ftest')*(`C_Ftest'*`b'')
-	matrix `D_Ftest' = inv(sq_`Omega_Ftest')*`C_Ftest'*`V'*`C_Ftest''*inv(sq_`Omega_Ftest')
+	matrix `z_Ftest' = invsym(sq_`Omega_Ftest')*(`C_Ftest'*`b'')
+	matrix `D_Ftest' = invsym(sq_`Omega_Ftest')*`C_Ftest'*`V'*`C_Ftest''*invsym(sq_`Omega_Ftest')
 	matrix `Q_Ftest' = `z_Ftest''*inv(`D_Ftest')*`z_Ftest'
 	
 	* Now we can compute the F-statistic:
@@ -340,14 +335,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	display in b  "Small Sample Corrected F-test:" 
 	display _col(10) in b  "F(" as result %5.4f `F_df1' "," as result %5.4f `F_df2' ")" _col(30) "=" _col(35) as result  %5.4f `F_stat'
 	display _col(10)  "Prob > F" _col(30) "=" _col(35) as result  %5.4f `F_pvalue'
-	
-	/* Naive-F */
-	/*
-	local m_min_p = `m'-`p'
-	local Naive_F = `Q_Ftest'[1,1]/`q_Ftest'
-	local Naive_F_p = Ftail(`q_Ftest',`m_min_p',`Naive_F')
-	disp "Naive F = `Naive_F', q: `q_Ftest', m: `m', p: `p', (m-p) = `m_min_p', p-value: `Naive_F_p'"
-	*/
 	
 	
 	* F-test:
