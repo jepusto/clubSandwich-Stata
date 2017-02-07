@@ -645,7 +645,30 @@ program define reg_sandwich, eclass sortpreserve
         di as error "estimation with meta-regression. Forthcoming in Psychological Methods."
     }
 
+   /*********************/
+    /*  post results  */
+    /*********************/
+	ereturn post `b' `V', obs(`nobs') depname(`t') esample(`touse')
+	
+	ereturn local cmd "reg_sandwich"
+	ereturn local type_VCR "`type_VCR'"
+	ereturn scalar N_clusters = `m'
+	ereturn matrix dfs = `_dfs'
 
+    
+	* Ftest	
+	ereturn matrix P_relevant = `Big_P_relevant' 
+	ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
+	if "`weighttype'" == "user supplied" {
+		ereturn matrix PP = `Big_PP'
+		ereturn local cluster = "`cluster'"
+	}
+			
+		
+
+	ereturn matrix MXWTWXM = `MXWTWXM'
+	
+	ereturn local indepvars `x'
 		
 end
 	
