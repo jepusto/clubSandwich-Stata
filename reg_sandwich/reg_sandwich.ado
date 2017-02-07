@@ -659,16 +659,21 @@ program define reg_sandwich, eclass sortpreserve
 	* Ftest	
 	ereturn matrix P_relevant = `Big_P_relevant' 
 	ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
-	if "`weighttype'" == "user supplied" {
+	if "`type_VCR'" == "WLSp" {
 		ereturn matrix PP = `Big_PP'
 		ereturn local cluster = "`cluster'"
-	}
-			
-		
 
-	ereturn matrix MXWTWXM = `MXWTWXM'
+	}
 	
+	ereturn matrix MXWTWXM = `MXWTWXM'			
 	ereturn local indepvars `x'
+	
+	if "`constant'"=="" {
+		ereturn local constant_used = 1
+	}
+	else {
+		ereturn local constant_used = 0
+	}
 		
 end
 	
