@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\wrapper_tests_log.txt
   log type:  text
- opened on:   7 Feb 2017, 06:41:00
+ opened on:   7 Feb 2017, 21:31:09
 
 . ***********************************************
 . display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
@@ -18,7 +18,7 @@ The goal of theses tests is to check if the coefficients, se and dfs are being p
 To match aweights with R, R pop needs to be divided by 100
 
 . display "DateTime: $S_DATE $S_TIME"
-DateTime:  7 Feb 2017 06:41:00
+DateTime:  7 Feb 2017 21:31:09
 
 . 
 . use "MortalityRates", replace
@@ -90,6 +90,91 @@ Robust standard error estimation using OLS
  _Iyear_1996 |      0.357   13.00      32.36     0.9782    -26.1167  26.8313
 ------------------------------------------------------------------------------
 
+. ** Ftests:
+. test_sandwich legal beertaxa
+
+
+Small Sample Corrected F-test:
+         F(2.0000,15.3836)   =    0.4364
+         Prob > F            =    0.6541
+
+. test_sandwich legal beerpercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,26.3146)   =    5.4030
+         Prob > F            =    0.0108
+
+. test_sandwich legal winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,16.5037)   =    7.7413
+         Prob > F            =    0.0043
+
+. 
+. test_sandwich beertaxa beerpercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,13.7157)   =    6.0991
+         Prob > F            =    0.0127
+
+. test_sandwich beertaxa winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,11.1429)   =    10.3628
+         Prob > F            =    0.0029
+
+. 
+. test_sandwich beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,13.5708)   =    7.1582
+         Prob > F            =    0.0075
+
+. 
+. test_sandwich legal beertaxa beerpercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,18.6606)   =    3.9721
+         Prob > F            =    0.0239
+
+. test_sandwich legal beertaxa winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,15.3297)   =    7.6209
+         Prob > F            =    0.0024
+
+. test_sandwich legal beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,17.2870)   =    5.4258
+         Prob > F            =    0.0082
+
+. test_sandwich beertaxa beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,13.4985)   =    7.6013
+         Prob > F            =    0.0032
+
+. 
+. test_sandwich legal beertaxa beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(4.0000,16.2570)   =    5.8029
+         Prob > F            =    0.0043
+
+. 
+. 
+. 
 . 
 . * a-weighted
 . * wls_pooled <- lm(specification, weights = pop, data = MV_Mortality)
@@ -140,6 +225,88 @@ Robust standard error estimation using WLS (aweights)
  _Iyear_1996 |      10.964   9.76      23.35     0.2727    -9.2102   31.1387
 ------------------------------------------------------------------------------
 
+. test_sandwich legal beertaxa
+
+
+Small Sample Corrected F-test:
+         F(2.0000,11.7237)   =    3.8442
+         Prob > F            =    0.0520
+
+. test_sandwich legal beerpercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,14.8020)   =    5.2027
+         Prob > F            =    0.0194
+
+. test_sandwich legal winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,8.1155)    =    1.0899
+         Prob > F            =    0.3808
+
+. 
+. test_sandwich beertaxa beerpercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,10.1456)   =    5.6213
+         Prob > F            =    0.0227
+
+. test_sandwich beertaxa winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,7.8652)    =    5.2444
+         Prob > F            =    0.0357
+
+. 
+. test_sandwich beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,9.5543)    =    4.4818
+         Prob > F            =    0.0424
+
+. 
+. test_sandwich legal beertaxa beerpercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,12.7921)   =    4.0502
+         Prob > F            =    0.0314
+
+. test_sandwich legal beertaxa winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,8.3620)    =    3.1811
+         Prob > F            =    0.0819
+
+. test_sandwich legal beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,10.1022)   =    3.0972
+         Prob > F            =    0.0757
+
+. test_sandwich beertaxa beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,9.8617)    =    3.7970
+         Prob > F            =    0.0478
+
+. 
+. test_sandwich legal beertaxa beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(4.0000,9.8115)    =    2.8265
+         Prob > F            =    0.0844
+
+. 
 . 
 . * p-weighted
 . * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)
@@ -192,6 +359,87 @@ Robust standard error estimation using WLS (pweights)
 see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
 
+. test_sandwich legal beertaxa
+
+
+Small Sample Corrected F-test:
+         F(2.0000,7.0821)    =    3.6627
+         Prob > F            =    0.0809
+
+. test_sandwich legal beerpercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,5.0472)    =    4.4635
+         Prob > F            =    0.0765
+
+. test_sandwich legal winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,2.3857)    =    0.7222
+         Prob > F            =    0.5685
+
+. 
+. test_sandwich beertaxa beerpercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,5.7135)    =    5.1952
+         Prob > F            =    0.0518
+
+. test_sandwich beertaxa winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,3.1578)    =    4.0779
+         Prob > F            =    0.1333
+
+. 
+. test_sandwich beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(2.0000,2.7345)    =    3.5276
+         Prob > F            =    0.1749
+
+. 
+. test_sandwich legal beertaxa beerpercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,6.0324)    =    3.4533
+         Prob > F            =    0.0913
+
+. test_sandwich legal beertaxa winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,2.9958)    =    2.1465
+         Prob > F            =    0.2735
+
+. test_sandwich legal beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,2.8295)    =    2.1532
+         Prob > F            =    0.2805
+
+. test_sandwich beertaxa beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(3.0000,3.5260)    =    2.7057
+         Prob > F            =    0.1958
+
+. 
+. test_sandwich legal beertaxa beerpercap winepercap
+
+
+Small Sample Corrected F-test:
+         F(4.0000,3.1834)    =    1.7776
+         Prob > F            =    0.3242
+
 . 
 . /**
 > ** with absorption: 
@@ -218,5 +466,5 @@ estimation with meta-regression. Forthcoming in Psychological Methods.
       name:  <unnamed>
        log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\wrapper_tests_log.txt
   log type:  text
- closed on:   7 Feb 2017, 06:42:16
+ closed on:   7 Feb 2017, 21:41:07
 -------------------------------------------------------------------------------------------------------------------------------------------------

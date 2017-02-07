@@ -37,17 +37,67 @@ local specification = "mrate legal beertaxa beerpercap winepercap i.year"
 *coef_test(ols_pooled, vcov = "CR2", cluster = MV_Mortality$state)
 * xi, noomit: reg `specification', nocons cluster(state)
 xi, noomit: reg_sandwich `specification', nocons cluster(state)
+** Ftests:
+test_sandwich legal beertaxa
+test_sandwich legal beerpercap
+test_sandwich legal winepercap
+
+test_sandwich beertaxa beerpercap
+test_sandwich beertaxa winepercap
+
+test_sandwich beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap
+test_sandwich legal beertaxa winepercap
+test_sandwich legal beerpercap winepercap
+test_sandwich beertaxa beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap winepercap
+
+
+
 
 * a-weighted
 * wls_pooled <- lm(specification, weights = pop, data = MV_Mortality)
 * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
 *xi, noomit: reg `specification' [aweight=pop], nocons cluster(state)
 xi, noomit: reg_sandwich `specification' [aweight=pop], nocons cluster(state)
+test_sandwich legal beertaxa
+test_sandwich legal beerpercap
+test_sandwich legal winepercap
+
+test_sandwich beertaxa beerpercap
+test_sandwich beertaxa winepercap
+
+test_sandwich beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap
+test_sandwich legal beertaxa winepercap
+test_sandwich legal beerpercap winepercap
+test_sandwich beertaxa beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap winepercap
+
 
 * p-weighted
 * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)
 *xi, noomit: reg `specification' [pweight=pop], nocons cluster(state)
 xi, noomit: reg_sandwich `specification' [pweight=pop], nocons cluster(state)
+test_sandwich legal beertaxa
+test_sandwich legal beerpercap
+test_sandwich legal winepercap
+
+test_sandwich beertaxa beerpercap
+test_sandwich beertaxa winepercap
+
+test_sandwich beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap
+test_sandwich legal beertaxa winepercap
+test_sandwich legal beerpercap winepercap
+test_sandwich beertaxa beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap winepercap
 
 /**
 ** with absorption: 
