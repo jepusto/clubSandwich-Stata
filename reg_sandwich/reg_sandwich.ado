@@ -56,7 +56,7 @@ program define reg_sandwich, eclass sortpreserve
 		min_n max_n ///
 		M ///
 		MXWTWXM ///
-		XWAeeAWX Big_P_relevant Big_PThetaP_relevant ///
+		XWAeeAWX Big_P_relevant Big_PThetaP_relevant Big_PP ///
 		PThetaP ///
 		Aj Wj Xj ej Bj ///
 		Tj ///
@@ -387,11 +387,11 @@ program define reg_sandwich, eclass sortpreserve
 													(`Bj')* ///
 													`Aj''*`Wj'*`Xj'*`M'' // p x p
 													
-			matrix `P`current_jcountFtest'_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x p
+			matrix `P`current_jcountFtest'_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
 			
-			tempname VV`current_jcountFtest'
+			tempname PP`current_jcountFtest'
 			
-			matrix `VV`current_jcountFtest'' = `Wj'*`Xj'*`M' // kj x p
+			matrix `PP`current_jcountFtest'' = `Wj'*`Xj'*`M' // kj x p
 		}
 		else if "`type_VCR'" == "WLSa" {
 			matrix `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant' = ///
@@ -407,17 +407,23 @@ program define reg_sandwich, eclass sortpreserve
 		* save for later
 		if `current_jcountFtest'==1 {
 			matrix `Big_PThetaP_relevant' = `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant'
-			if "`type_VCR'" ~= "WLSp" {
-				matrix `Big_P_relevant' = `P`current_jcountFtest'_relevant'
+			matrix `Big_P_relevant' = `P`current_jcountFtest'_relevant''
+			if "`type_VCR'" == "WLSp" {
+				matrix `Big_PP' = `PP`current_jcountFtest''
 			}
 		}
-		else {
+		else {	
 			matrix `Big_PThetaP_relevant' = [`Big_PThetaP_relevant' \ `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant']
-			if "`type_VCR'" ~= "WLSp" {
-				matrix `Big_P_relevant' = [`Big_P_relevant' \ `P`current_jcountFtest'_relevant']
+			matrix `Big_P_relevant' = [`Big_P_relevant' \ `P`current_jcountFtest'_relevant'']
+			
+			if "`type_VCR'" == "WLSp" {
+				matrix `Big_PP' = [`Big_PP' \ `PP`current_jcountFtest'']
+			
 			}
 		}
-			 	
+		
+		
+			
 		
     }
 	
@@ -488,7 +494,7 @@ program define reg_sandwich, eclass sortpreserve
 				else if "`type_VCR'" == "WLSp" {
 				
 					matrix  `PThetaP' = `P`i'_relevant'* ///
-										(-`VV`i''*`X`j'''-`X`i''*`VV`j''' + `X`i''*`MXWTWXM'*`X`j''')* ///
+										(-`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j''')* ///
 										`P`j'_relevant''
 					
 					
