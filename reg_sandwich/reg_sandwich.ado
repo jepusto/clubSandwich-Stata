@@ -125,10 +125,25 @@ program define reg_sandwich, eclass sortpreserve
     if "`x'" == "." local x ""
 	
 	
-	
-	** call regression:
+	** for absorb:
+	if "`main_function'" == "areg" {
+		noisily capture: mvreg `x' = i.`absorb'  if `touse'
+		* predict:
+		local new_x = ""
+		foreach xr of varlist `x' {
+			tempvar _RS`xr'
+			local new_x = trim("`new_x'") + " " + "`_RS`xr''"
+			qui: predict `_RS`xr'' if e(sample) , residuals equation( `xr' )
+		}
+	}
+	** call main regression:
 	*disp "`main_function' `t' `x' `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'"
 	noisily capture: `main_function' `t' `x'  `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'
+	
+	if "`main_function'" == "areg" {
+		local old_x = "`x'"
+		local x = "`new_x'"
+	}
 	
 	
 	** prep for small sample reduced t-test:
@@ -552,7 +567,10 @@ program define reg_sandwich, eclass sortpreserve
 
 
     *name the rows and columns of the matrixes
-
+	if "`main_function'" == "areg" {
+		local x = "`old_x'"
+	}
+	
 	if "`constant'"=="" {	
 		matrix colnames `V' = `x' _cons
 		matrix rownames `V' = `x' _cons
