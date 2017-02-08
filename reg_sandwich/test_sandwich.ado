@@ -1,28 +1,12 @@
-*! version 3.0 updated 15-Aug-2016
+*! version 1.0 updated 08-Feb-2017
 // Update by Marcelo Tyszler (tyszler.jobs@gmail.com):
-// - A few typos in the comments
-// - small sample F-test
-//
-// This procedure estimates the robust standard errors for meta regressions by way of various weighting schemes
-// Original program by Eric Hedberg (eric.hedberg@me.com) based on
-// Hedges, Larry V., Elizabeth Tipton, and Matthew C. Johnson. 2010. Robust variance estimation
-//     in meta-regression with dependent effect size estimates. Research Synthesis Methods.
-//     (www.interscience.wiley.com) DOI: 10.1002/jrsm.5
-//and
-//Tipton, E. (in press) Small sample adjustments for robust variance estimation with meta-regression. Forthcoming in Psychological Methods.
-//
-// Added by Marcelo Tyszler (tyszler.jobs@gmail.com)
-// Implements the small sample f-test based on:
-// Tipton and Pustejovsky (2015). Small-sample adjustments for tests of moderators and model fit using robust variance estimation in meta-regression
 // 
-// The implemented test is the AHZ test: Hotelling's T2 approximation, using Zhang's approach to estimate eta. The key equations are (10) and (14).
-// The test is computed under the modelled approach, where W = inv(Theta) (or Theta = inv(W)) and therefore Var(b) = M = inv(X'*W*X)
-
+// Post-estimation function for reg_sandwich
+//
 
 capture program drop test_sandwich
 program define test_sandwich, eclass byable(recall) sortpreserve
-	*version 13 // Marcelo Tyszler
-	version 14.1 // Marcelo Tyszler
+	version 14.2 
 	
 	* verify matqrt is installed:
 	capture which matsqrt
@@ -42,7 +26,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
     syntax [varlist(default=none)], [cons]
 	
 	tempname  C_Ftest ///
-			  gs gt Var_d_st temp_calc Sum_Var_d_st ///
+			  gs gt temp_calc2 temp_calc Sum_temp_calc2 ///
 			 Omega_Ftest matrix_Ftest middle_Omega ///
 			 Big_P_relevant Big_PThetaP_relevant Pi_Theta_Pi Pi_relevant Pj_relevant Big_PP middle_PThetaP ///
 			 Fconstant ///
@@ -152,18 +136,55 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	mata : st_matrix("`C_Ftest'", sort(st_matrix("`C_Ftest'"), -1..-`p'))
 	
     * F-test:
-	* We need to get sum (s = 1 to q) sum (t = 1 to q) Var(d_st) (denominator of eq(14))
+	* 
+	* To compute the degress of freedom we need P:
+	* Psi = (I-Hx)i'*Ai*Wi*Xi*M*C*gs
 	*
-	* Var(d_st) can be computed using equation (8), assuming Theta = inv(W):
-	* Cov(u1'*D*u2,u3'*D*u4) = sum (i=1 to m) sum(j = 1 to m) u1'*Bi*inv(W)*Bj'u4*u2'*Bi*inv(W)*Bj'*u3 + u1'*Bi*inv(W)*Bj'u3*u2'*Bi*inv(W)*Bj'*u4
-	* * where m = is the numberf of studies
+	* These matrices are needed to compute the terms Psi'*Theta*Ptj:
+	*  gs'*C'*M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M*C*gt
 	*
-	* we additionally set u1 = u3 = gs and u2 = u4 = gt, where vector gs has entry s = 1 and 0 otherwise and gt is similarly defined
+	* We saved the "middle" portion, which is independent of C and gs:
+	* 
+	* Using the fact that Hx = X*M*X'W and
+	* (I-X*M*X'*W)i*T*(I-X*M*X'*W)j' = 
 	*
-	* Therefore
-	* Cov(gs'*D*gt,gs'*D*gt) =  sum (i=1 to m) sum(j = 1 to m) gs'*Bi*Theta*Bj'*gt*gt'*Bi*Theta*Bj'*gs + gs'*Bi*Theta*Bj'*gs*gt'*Bi*Theta*Bj'*gt
-	* Var(d_st) = Var(gs'*D*gt) = Cov(gs'*D*gt,gs'*D*gt) 
+	* if i==j
+	* Tj - Tj*(Wj*Xj*M*Xj') - (Xj*M*Xj'*W)*Tj + Xj*(M*X'*W*V*W*X*M)*Xj' 
 	*
+	* For OLS this simplifies to:
+	* Tj - Xj*M*Xj'
+	*
+	* For WLSp, this simplifies to (Dj = I):
+	* Tj - Wj*Xj*M*Xj' - Xj*M*Xj'Wj + Xj'MXWWXM*Xj'
+	*
+	* For WLSa, this simplified to:
+	* Tj - Xj*M*Xj
+	* 
+	*
+	* and we call M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M:
+	* Pi_Theta_Pi_relevant
+	*
+	*
+	* if i!=j
+	* - Ti*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Tj     + Xi*(M*X'*W*T*W*X*M)*Xj'
+	*
+	* For OLS this simplifies to:
+	* - Xi*M*Xj'
+	*
+	* For WLSp, this simplifies to:
+	* - Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj     + Xi*(M*X'*W*W*X*M)*Xj'
+	*
+	* For WLSa, this simplified to:
+	* - Xi*M*Xj' 
+	*  
+	* For OLS and WLSa we call M*Xi'*Wi*Ai*Xi:
+	* Pi_relevant (and ignore the (min) sign, since it will be cancelled out after multiplication)
+	*
+	* For WLSp we call  M*Xi'*Wi*Ai
+	* Pi_Pj_relevant, (this is more efficient to save)
+	* 
+	* and additionally save M*Xi'*Wi*Ai as PPi
+	
 	*
 	
 	local m = e(N_clusters)
@@ -224,19 +245,19 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	matsqrt `Omega_Ftest'
 	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')
 	
-	local Sum_Var_d_st = 0
+	local Sum_temp_calc2 = 0
 	
 	forvalues s = 1/`q_Ftest'{
 		
 		matrix `gs' = `matrix_Ftest'[1..`q_Ftest',`s']
 		
-		* We use the symmetry here, since that Var_d_st = Var_d_ts
+		* We use the symmetry here, since that temp_calc2 = Var_d_ts
 		forvalues t = `s'/`q_Ftest'{
 			
 			matrix `gt' = `matrix_Ftest'[1..`q_Ftest',`t']
 			
 			* get Var(d_st)
-			local Var_d_st = 0
+			local temp_calc2 = 0
 			forvalues i = 1/`m'{
 				* We use the symmetry here, since that temp(i,j) =temp(j,i)
 				forvalues j = `i'/`m'{
@@ -282,21 +303,21 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 					}
 					* We use the symmetry here, since that temp(i,j) =temp(j,i)
 					if `i'==`j'{
-						local Var_d_st = `Var_d_st' + `temp_calc'[1,1]	
+						local temp_calc2 = `temp_calc2' + `temp_calc'[1,1]	
 					}
 					else {
-						local Var_d_st = `Var_d_st' + 2*`temp_calc'[1,1]
+						local temp_calc2 = `temp_calc2' + 2*`temp_calc'[1,1]
 					}
 				} 
 			}
 			
-			* update SumSum Var(d_st)
-			* We use the symmetry here, since that Var_d_st = Var_d_ts
+			* update SumSum temp_calc
+			* We use the symmetry here, since that temp_calc2(i,j) = temp_calc2(j,i)
 			if `s'==`t' {
-				local Sum_Var_d_st = `Sum_Var_d_st' + `Var_d_st'
+				local Sum_temp_calc2 = `Sum_temp_calc2' + `temp_calc2'
 			}
 			else {
-				local Sum_Var_d_st = `Sum_Var_d_st' + 2*`Var_d_st'
+				local Sum_temp_calc2 = `Sum_temp_calc2' + 2*`temp_calc2'
 			}
 			
 		}
@@ -307,7 +328,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	* eta needs to be computed according to equation (14):
 	* eta = q*(q+1) / [sum(s=1 to q) sum(t=1 to q) Var(d_st)]
 	
-	local eta_Ftest = (`q_Ftest'*(`q_Ftest'+1))/`Sum_Var_d_st'
+	local eta_Ftest = (`q_Ftest'*(`q_Ftest'+1))/`Sum_temp_calc2'
 	
 	* z = Omega^(-1/2)(Cb-c)
 	* D = Omega^(-1/2)*C*VR*C'*Omega^(-1/2)

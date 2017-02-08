@@ -3,7 +3,7 @@
 *! version 0.0 updated 30-Jan-2017
 // Updated by Marcelo Tyszler (tyszler.jobs@gmail.com):
 //
-// Initialize the wrapper function for reg_sandwich:
+// Wrapper function for reg_sandwich:
 //
 // allow for factor variables via xi:.
 // have an option to absorb fixed effects, as in the areg command.
@@ -361,8 +361,10 @@ program define reg_sandwich, eclass sortpreserve
 		* For OLS and WLSa we call M*Xi'*Wi*Ai*Xi:
 		* Pi_relevant (and ignore the (min) sign, since it will be cancelled out after multiplication)
 		*
-		* For WLSp we call  M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M
+		* For WLSp we call  M*Xi'*Wi*Ai
 		* Pi_Pj_relevant, (this is more efficient to save)
+		* 
+		* and additionally save M*Xi'*Wi*Ai as PPi
 		
 		local current_jcountFtest = `current_jcountFtest'+1
         tempname P`current_jcountFtest'_relevant  P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant
@@ -485,8 +487,9 @@ program define reg_sandwich, eclass sortpreserve
 				* For OLS and WLSa we call M*Xi'*Wi*Ai*Xi:
 				* Pi_relevant (and ignore the (min) sign, since it will be cancelled out after multiplication)
 				*
-				* For WLSp we call  M*Xi'*Wi*Ai*(I-Hx)i
-				* Pi_relevant, and ignore the simplification since it does not bring efficiency gains
+				* For WLSp we call  M*Xi'*Wi*Ai
+				* Pi_relevant,
+				* and M*Xi'*Wi*Ai as PPi
 				
 				if "`type_VCR'" == "OLS" {
 					matrix  `PThetaP' = `P`i'_relevant'*`M'*`P`j'_relevant''														
