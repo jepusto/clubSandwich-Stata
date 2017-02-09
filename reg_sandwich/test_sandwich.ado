@@ -197,7 +197,11 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		if "`constant_used'" == "1" {
 			quietly : gen double `Fconstant' = 1 if e(sample)
 		}
-			
+		
+		if "`e(absorb)'"~=""{
+			tempname Ur
+			matrix `Ur' = e(Ur)
+		}
 		
 		matrix `Big_PP' = e(PP)
 		
@@ -214,15 +218,25 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 
 						
 			tempname X`i' PP`i' P`i'_relevant
-			if "`constant_used'" == "1" {
-				mkmat `x' `Fconstant' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')		
-			}
-			else {
-				mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')	
-			}
 			
 			local starti = `endi'+1
-			local endi  =  `starti' + rowsof(`X`i'')-1
+			
+			if "`e(absorb)'"~=""{
+				qui: sum  `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1]
+				local endi  =  `starti' + r(N) -1
+				matrix `X`i'' = `Ur'[`starti'..`endi',1..`p']
+			}
+			else {
+				if "`constant_used'" == "1" {
+					mkmat `x' `Fconstant' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')		
+				}
+				else {
+					mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')	
+				}
+				local endi  =  `starti' + rowsof(`X`i'')-1
+			}
+			
+			
 			
 			matrix `PP`i'' = `Big_PP'[`starti'..`endi',1..`p']
 			matrix `P`i'_relevant' = `Big_P_relevant'[`starti'..`endi',1..`p']'
@@ -285,9 +299,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 							* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Vj     + Xi*(M*X'*W*V*W*X*M)*Xj'
 							* we call PPj = Vj*Wj*Xj*M
 											
-							
 							matrix `middle_PThetaP' = -`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j'''
-							
+
 						}
 						else {
 							

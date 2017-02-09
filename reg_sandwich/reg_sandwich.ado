@@ -568,7 +568,18 @@ program define reg_sandwich, eclass sortpreserve
 
     *name the rows and columns of the matrixes
 	if "`main_function'" == "areg" {
+		if "`type_VCR'" == "WLSp" {
+			if "`constant'"=="" {
+				mkmat `x' `cons' if `touse', matrix(`X')
+				matrix colnames `X' = `old_x' _cons
+			}
+			else{
+				mkmat `x'  if `touse', matrix(`X')
+				matrix colnames `X' = `old_x'
+			}
+		}
 		local x = "`old_x'"
+			
 	}
 	
 	if "`constant'"=="" {	
@@ -675,14 +686,21 @@ program define reg_sandwich, eclass sortpreserve
 	ereturn local type_VCR "`type_VCR'"
 	ereturn scalar N_clusters = `m'
 	ereturn matrix dfs = `_dfs'
-
+	
+	ereturn local cluster = "`cluster'"
+	
+	if "`main_function'" == "areg" {
+			ereturn local absorb = "`absorb'"
+	}
     
 	* Ftest	
 	ereturn matrix P_relevant = `Big_P_relevant' 
 	ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
 	if "`type_VCR'" == "WLSp" {
 		ereturn matrix PP = `Big_PP'
-		ereturn local cluster = "`cluster'"
+		if "`main_function'" == "areg" {
+			ereturn matrix Ur = `X'
+		}
 
 	}
 	
