@@ -17,7 +17,6 @@ capture log close
 log using "wrapper_tests_log.txt", replace text
 ***********************************************
 display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
-display "WARNING: absorb is not fully implemented yet"
 display "The goal of theses tests is to check if the coefficients, se and dfs are being properly calculated"
 display "To match aweights with R, R pop needs to be divided by 100"
 display "DateTime: $S_DATE $S_TIME"
@@ -99,7 +98,7 @@ test_sandwich beertaxa beerpercap winepercap
 
 test_sandwich legal beertaxa beerpercap winepercap
 
-/**
+
 ** with absorption: 
 disp "WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level"
 
@@ -107,17 +106,62 @@ disp "WARNING: areg has no 'noconstant' option, therefore the values for the dum
 * ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year"))
 *xi: areg `specification', absorb(state) cluster(state)
 xi: reg_sandwich `specification', absorb(state) cluster(state)
+test_sandwich legal beertaxa
+test_sandwich legal beerpercap
+test_sandwich legal winepercap
+
+test_sandwich beertaxa beerpercap
+test_sandwich beertaxa winepercap
+
+test_sandwich beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap
+test_sandwich legal beertaxa winepercap
+test_sandwich legal beerpercap winepercap
+test_sandwich beertaxa beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap winepercap
 
 * a-weighted
 * wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop, data = MV_Mortality)
 * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
 *xi, noomit: areg `specification' [aweight=pop], absorb(state) cluster(state)
 xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
+test_sandwich legal beertaxa
+test_sandwich legal beerpercap
+test_sandwich legal winepercap
+
+test_sandwich beertaxa beerpercap
+test_sandwich beertaxa winepercap
+
+test_sandwich beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap
+test_sandwich legal beertaxa winepercap
+test_sandwich legal beerpercap winepercap
+test_sandwich beertaxa beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap winepercap
 
 * p-weighted
 * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
 *xi, noomit: areg `specification' [pweight=pop], absorb(state) cluster(state)
 xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
-**/
+test_sandwich legal beertaxa
+test_sandwich legal beerpercap
+test_sandwich legal winepercap
+
+test_sandwich beertaxa beerpercap
+test_sandwich beertaxa winepercap
+
+test_sandwich beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap
+test_sandwich legal beertaxa winepercap
+test_sandwich legal beerpercap winepercap
+test_sandwich beertaxa beerpercap winepercap
+
+test_sandwich legal beertaxa beerpercap winepercap
+
 ****************
 log close

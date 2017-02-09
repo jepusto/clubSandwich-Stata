@@ -125,10 +125,25 @@ program define reg_sandwich, eclass sortpreserve
     if "`x'" == "." local x ""
 	
 	
-	
-	** call regression:
+	** for absorb:
+	if "`main_function'" == "areg" {
+		* predict:
+		local new_x = ""
+		foreach xr of varlist `x' {
+			tempvar _RS`xr'
+			local new_x = trim("`new_x'") + " " + "`_RS`xr''"
+			noisily capture: reg `xr' i.`absorb'  if `touse'
+			qui: predict `_RS`xr'' if e(sample) , residuals 
+		}
+	}
+	** call main regression:
 	*disp "`main_function' `t' `x' `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'"
 	noisily capture: `main_function' `t' `x'  `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'
+	
+	if "`main_function'" == "areg" {
+		local old_x = "`x'"
+		local x = "`new_x'"
+	}
 	
 	
 	** prep for small sample reduced t-test:
@@ -137,6 +152,10 @@ program define reg_sandwich, eclass sortpreserve
 	matrix p = rowsof(e(V))
 	local p = p[1,1]
 	
+	if "`main_function'" == "areg" {
+		*ignore constant
+		local --p
+	}
 	
 	*capture ids
     quietly : gen double `clusternumber' = `cluster' if `touse'
@@ -193,7 +212,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 
 	
-	if "`constant'"=="" {
+	if "`constant'"=="" & "`main_function'" != "areg" {
 		mkmat `x' `cons' if `touse', matrix(`X')
 		matrix colnames `X' = `x' _cons
 	}
@@ -248,7 +267,7 @@ program define reg_sandwich, eclass sortpreserve
 	
     foreach j in `idlist' {
 		
-		if "`constant'"=="" {
+		if "`constant'"=="" & "`main_function'" != "areg" {
 			mkmat `x' `cons' if `touse' & `clusternumber' == `j', matrix(`Xj')
 			matrix colnames `Xj' = `x' _cons
 		} 
@@ -445,7 +464,7 @@ program define reg_sandwich, eclass sortpreserve
 		
 				tempname X`i'
 				
-				if "`constant'"=="" {
+				if "`constant'"=="" & "`main_function'" != "areg" {
 					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')
 				} 
 				else {
@@ -551,9 +570,18 @@ program define reg_sandwich, eclass sortpreserve
     display as text "Robust standard error estimation using " as result "`main_call_display'`absorb_call_display'"
 
 
-    *name the rows and columns of the matrixes
 
-	if "`constant'"=="" {	
+	if "`main_function'" == "areg" {
+		if "`type_VCR'" == "WLSp" {
+			mkmat `x'  if `touse', matrix(`X')
+			matrix colnames `X' = `old_x'
+		}
+		local x = "`old_x'"
+			
+	}
+	
+	*name the rows and columns of the matrixes
+	if "`constant'"=="" & "`main_function'" != "areg" {	
 		matrix colnames `V' = `x' _cons
 		matrix rownames `V' = `x' _cons
 		matrix colnames `_dfs' = `x' _cons
@@ -591,7 +619,9 @@ program define reg_sandwich, eclass sortpreserve
     scalar `prob' = 0
 	tempname effect variance dof
     local i = 1
-	matrix `b' = e(b)
+	tempname b_temp
+	matrix `b_temp' = e(b)
+	matrix `b' = `b_temp'[1, 1..`p']
     foreach v in `x' {
         scalar `effect' = `b'[1,`i']
         scalar `variance' = `V'[`i',`i']
@@ -616,7 +646,7 @@ program define reg_sandwich, eclass sortpreserve
         local ++i
     }
 	
-	if "`constant'"=="" {
+	if "`constant'"=="" & "`main_function'" != "areg" {
 		local v = "_cons"
 	    scalar `effect' = `b'[1,`i']
         scalar `variance' = `V'[`i',`i']
@@ -657,21 +687,28 @@ program define reg_sandwich, eclass sortpreserve
 	ereturn local type_VCR "`type_VCR'"
 	ereturn scalar N_clusters = `m'
 	ereturn matrix dfs = `_dfs'
-
+	
+	ereturn local cluster = "`cluster'"
+	
+	if "`main_function'" == "areg" {
+			ereturn local absorb = "`absorb'"
+	}
     
 	* Ftest	
 	ereturn matrix P_relevant = `Big_P_relevant' 
 	ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
 	if "`type_VCR'" == "WLSp" {
 		ereturn matrix PP = `Big_PP'
-		ereturn local cluster = "`cluster'"
+		if "`main_function'" == "areg" {
+			ereturn matrix Ur = `X'
+		}
 
 	}
 	
 	ereturn matrix MXWTWXM = `MXWTWXM'			
 	ereturn local indepvars `x'
 	
-	if "`constant'"=="" {
+	if "`constant'"=="" & "`main_function'" != "areg" {
 		ereturn local constant_used = 1
 	}
 	else {
