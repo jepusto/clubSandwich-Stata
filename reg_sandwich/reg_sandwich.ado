@@ -152,6 +152,10 @@ program define reg_sandwich, eclass sortpreserve
 	matrix p = rowsof(e(V))
 	local p = p[1,1]
 	
+	if "`main_function'" == "areg" {
+		*ignore constant
+		local --p
+	}
 	
 	*capture ids
     quietly : gen double `clusternumber' = `cluster' if `touse'
@@ -208,7 +212,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 
 	
-	if "`constant'"=="" {
+	if "`constant'"=="" & "`main_function'" != "areg" {
 		mkmat `x' `cons' if `touse', matrix(`X')
 		matrix colnames `X' = `x' _cons
 	}
@@ -263,7 +267,7 @@ program define reg_sandwich, eclass sortpreserve
 	
     foreach j in `idlist' {
 		
-		if "`constant'"=="" {
+		if "`constant'"=="" & "`main_function'" != "areg" {
 			mkmat `x' `cons' if `touse' & `clusternumber' == `j', matrix(`Xj')
 			matrix colnames `Xj' = `x' _cons
 		} 
@@ -460,7 +464,7 @@ program define reg_sandwich, eclass sortpreserve
 		
 				tempname X`i'
 				
-				if "`constant'"=="" {
+				if "`constant'"=="" & "`main_function'" != "areg" {
 					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')
 				} 
 				else {
@@ -569,21 +573,15 @@ program define reg_sandwich, eclass sortpreserve
 
 	if "`main_function'" == "areg" {
 		if "`type_VCR'" == "WLSp" {
-			if "`constant'"=="" {
-				mkmat `x' `cons' if `touse', matrix(`X')
-				matrix colnames `X' = `old_x' _cons
-			}
-			else{
-				mkmat `x'  if `touse', matrix(`X')
-				matrix colnames `X' = `old_x'
-			}
+			mkmat `x'  if `touse', matrix(`X')
+			matrix colnames `X' = `old_x'
 		}
 		local x = "`old_x'"
 			
 	}
 	
 	*name the rows and columns of the matrixes
-	if "`constant'"=="" {	
+	if "`constant'"=="" & "`main_function'" != "areg" {	
 		matrix colnames `V' = `x' _cons
 		matrix rownames `V' = `x' _cons
 		matrix colnames `_dfs' = `x' _cons
@@ -621,7 +619,9 @@ program define reg_sandwich, eclass sortpreserve
     scalar `prob' = 0
 	tempname effect variance dof
     local i = 1
-	matrix `b' = e(b)
+	tempname b_temp
+	matrix `b_temp' = e(b)
+	matrix `b' = `b_temp'[1, 1..`p']
     foreach v in `x' {
         scalar `effect' = `b'[1,`i']
         scalar `variance' = `V'[`i',`i']
@@ -646,7 +646,7 @@ program define reg_sandwich, eclass sortpreserve
         local ++i
     }
 	
-	if "`constant'"=="" {
+	if "`constant'"=="" & "`main_function'" != "areg" {
 		local v = "_cons"
 	    scalar `effect' = `b'[1,`i']
         scalar `variance' = `V'[`i',`i']
@@ -708,7 +708,7 @@ program define reg_sandwich, eclass sortpreserve
 	ereturn matrix MXWTWXM = `MXWTWXM'			
 	ereturn local indepvars `x'
 	
-	if "`constant'"=="" {
+	if "`constant'"=="" & "`main_function'" != "areg" {
 		ereturn local constant_used = 1
 	}
 	else {
