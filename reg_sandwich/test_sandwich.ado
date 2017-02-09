@@ -352,8 +352,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	
 	matrix `z_Ftest' = invsym(sq_`Omega_Ftest')*(`C_Ftest'*`b'')
 	matrix `D_Ftest' = invsym(sq_`Omega_Ftest')*`C_Ftest'*`V'*`C_Ftest''*invsym(sq_`Omega_Ftest')
-	matrix `Q_Ftest' = `z_Ftest''*inv(`D_Ftest')*`z_Ftest'
-	
+	matrix `Q_Ftest' = `z_Ftest''*invsym(`D_Ftest')*`z_Ftest'
+
 	* Now we can compute the F-statistic:
 	* (eta - q + 1)/(eta*q) * Q  follows F(q, eta - q + 1) distribution
 	local F_stat = ((`eta_Ftest' - `q_Ftest' + 1)/(`eta_Ftest'*`q_Ftest'))* `Q_Ftest'[1,1]
