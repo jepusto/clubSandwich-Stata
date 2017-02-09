@@ -566,7 +566,7 @@ program define reg_sandwich, eclass sortpreserve
     display as text "Robust standard error estimation using " as result "`main_call_display'`absorb_call_display'"
 
 
-    *name the rows and columns of the matrixes
+
 	if "`main_function'" == "areg" {
 		if "`type_VCR'" == "WLSp" {
 			if "`constant'"=="" {
@@ -582,6 +582,7 @@ program define reg_sandwich, eclass sortpreserve
 			
 	}
 	
+	*name the rows and columns of the matrixes
 	if "`constant'"=="" {	
 		matrix colnames `V' = `x' _cons
 		matrix rownames `V' = `x' _cons
