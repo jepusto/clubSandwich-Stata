@@ -127,13 +127,13 @@ program define reg_sandwich, eclass sortpreserve
 	
 	** for absorb:
 	if "`main_function'" == "areg" {
-		noisily capture: mvreg `x' = i.`absorb'  if `touse'
 		* predict:
 		local new_x = ""
 		foreach xr of varlist `x' {
 			tempvar _RS`xr'
 			local new_x = trim("`new_x'") + " " + "`_RS`xr''"
-			qui: predict `_RS`xr'' if e(sample) , residuals equation( `xr' )
+			noisily capture: reg `xr' i.`absorb'  if `touse'
+			qui: predict `_RS`xr'' if e(sample) , residuals 
 		}
 	}
 	** call main regression:
