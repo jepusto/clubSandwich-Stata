@@ -132,7 +132,7 @@ program define reg_sandwich, eclass sortpreserve
 		foreach xr of varlist `x' {
 			tempvar _RS`xr'
 			local new_x = trim("`new_x'") + " " + "`_RS`xr''"
-			noisily capture: reg `xr' i.`absorb'  if `touse'
+			noisily capture: reg `xr' i.`absorb' `weight_call' if `touse'
 			qui: predict `_RS`xr'' if e(sample) , residuals 
 		}
 	}
