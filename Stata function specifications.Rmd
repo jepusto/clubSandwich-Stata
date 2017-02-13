@@ -75,10 +75,15 @@ coef_test(ols_within, vcov = "CR2")
 
 # a-weighted
 wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop_scale, data = MV_Mortality)
-coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+relevant_coefs <- !grepl("factor\\(state\\)", names(coef(wls_within)))
+coef_test(wls_within, vcov = "CR2", 
+          cluster = MV_Mortality$state, 
+          inverse_var = TRUE)[relevant_coefs, ]
 
 # p-weighted
-coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
+coef_test(wls_within, vcov = "CR2", 
+          cluster = MV_Mortality$state, 
+          inverse_var = FALSE, ignore_FE = TRUE)[relevant_coefs, ]
 
 ```
 
