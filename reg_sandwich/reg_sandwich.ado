@@ -133,7 +133,7 @@ program define reg_sandwich, eclass sortpreserve
 			tempvar _RS`xr'
 			local new_x = trim("`new_x'") + " " + "`_RS`xr''"
 			noisily capture: reg `xr' i.`absorb' `weight_call' if `touse'
-			qui: predict `_RS`xr'' if e(sample) , residuals 
+			qui: predict `_RS`xr'' if `touse' , residuals 
 		}
 	}
 	** call main regression:
