@@ -11,7 +11,6 @@
 
 <meta name="author" content="James E. Pustejovsky" />
 
-<meta name="date" content="2016-12-12" />
 
 <title>clubSandwich-Stata-functions</title>
 
@@ -119,13 +118,34 @@ $(document).ready(function () {
 
 <h1 class="title toc-ignore">clubSandwich-Stata-functions</h1>
 <h4 class="author"><em>James E. Pustejovsky</em></h4>
-<h4 class="date"><em>December 12, 2016</em></h4>
 
 </div>
 
+<div id="TOC">
+<ul>
+<li><a href="#task-1-clubsandwich-versions-of-reg-and-areg"><span class="toc-section-number">1</span> Task 1: clubSandwich versions of reg and areg</a></li>
+<li><a href="#lm-without-state-effects"><span class="toc-section-number">2</span> lm without state effects</a><ul>
+<li><a href="#unweighted"><span class="toc-section-number">2.1</span> unweighted</a></li>
+<li><a href="#a-weights"><span class="toc-section-number">2.2</span> a-weights</a></li>
+<li><a href="#p-weights"><span class="toc-section-number">2.3</span> p-weights</a></li>
+</ul></li>
+<li><a href="#lm-with-state-effects"><span class="toc-section-number">3</span> lm with state effects</a><ul>
+<li><a href="#unweighted-1"><span class="toc-section-number">3.1</span> unweighted</a></li>
+<li><a href="#a-weights-1"><span class="toc-section-number">3.2</span> a-weights</a></li>
+<li><a href="#p-weights-1"><span class="toc-section-number">3.3</span> p-weights</a></li>
+</ul></li>
+<li><a href="#absorbing-state-effects"><span class="toc-section-number">4</span> Absorbing state effects</a><ul>
+<li><a href="#unweighted-2"><span class="toc-section-number">4.1</span> unweighted</a></li>
+<li><a href="#a-weights-2"><span class="toc-section-number">4.2</span> a-weights</a></li>
+<li><a href="#p-weights-2"><span class="toc-section-number">4.3</span> p-weights</a></li>
+</ul></li>
+<li><a href="#task-2-clubsandwich-f-test"><span class="toc-section-number">5</span> Task 2: clubSandwich F-test</a></li>
+<li><a href="#r-session-information"><span class="toc-section-number">6</span> R session information</a></li>
+</ul>
+</div>
 
 <div id="task-1-clubsandwich-versions-of-reg-and-areg" class="section level1">
-<h1>Task 1: clubSandwich versions of reg and areg</h1>
+<h1><span class="header-section-number">1</span> Task 1: clubSandwich versions of reg and areg</h1>
 <p>Develop a command to fit linear regressions by OLS/WLS, calculate the clubSandwich standard errors, and calculate small-sample t-tests for each coefficient. The command should:</p>
 <ul>
 <li>allow for factor variables via <code>xi:</code>.</li>
@@ -142,7 +162,10 @@ $(document).ready(function () {
 <li>If <code>pweight</code>s are used, then the working variance matrix should be an identity matix.</li>
 <li>If <code>aweight</code>s are used, then the working variance matrix should be diagonal with diagonal entries equal to the inverses of the weights (i.e., we assume that the weights are inverse-variance).</li>
 </ul>
-<p>To verify that the command is correct, replicate the following analysis:</p>
+<p>To verify that the command is correct, replicate the following analysis.</p>
+</div>
+<div id="lm-without-state-effects" class="section level1">
+<h1><span class="header-section-number">2</span> lm without state effects</h1>
 <pre class="r"><code>library(haven)
 library(dplyr)
 library(clubSandwich)
@@ -161,8 +184,11 @@ mean(MV_Mortality$pop)</code></pre>
 
 specification &lt;- mrate ~ 0 + legal + beertaxa + beerpercap + winepercap + factor(year)
   
-# unweighted
-ols_pooled &lt;- lm(specification, data = MV_Mortality)
+# F-test specifications
+constraints &lt;- c(combn(4,2,simplify=FALSE), combn(4,3,simplify = FALSE), list(1:4))</code></pre>
+<div id="unweighted" class="section level2">
+<h2><span class="header-section-number">2.1</span> unweighted</h2>
+<pre class="r"><code>ols_pooled &lt;- lm(specification, data = MV_Mortality)
 coef_test(ols_pooled, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state)</code></pre>
 <pre><code>##                Coef Estimate    SE  d.f. p-val (Satt) Sig.
 ## 1             legal   -4.004  4.65 36.01      0.39508     
@@ -196,200 +222,7 @@ coef_test(ols_pooled, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state)</cod
 ## 29 factor(year)1994    1.434 13.09 32.25      0.91346     
 ## 30 factor(year)1995    0.203 12.71 32.48      0.98736     
 ## 31 factor(year)1996    0.357 13.00 32.36      0.97824</code></pre>
-<pre class="r"><code># a-weighted
-wls_pooled &lt;- lm(specification, weights = pop_scale, data = MV_Mortality)
-vcovCR(wls_pooled, cluster = MV_Mortality$state, type = &quot;CR2&quot;, inverse_var = TRUE)[1:4,1:4]</code></pre>
-<pre><code>##                 legal  beertaxa beerpercap winepercap
-## legal       23.732610 -9.976276  -19.44657  -4.707518
-## beertaxa    -9.976276 41.114919   20.08675  19.904657
-## beerpercap -19.446574 20.086751   45.83896 -26.374096
-## winepercap  -4.707518 19.904657  -26.37410 235.870336</code></pre>
-<pre class="r"><code>coef_test(wls_pooled, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE)</code></pre>
-<pre><code>##                Coef Estimate    SE  d.f. p-val (Satt) Sig.
-## 1             legal    -4.24  4.87 16.99      0.39666     
-## 2          beertaxa    18.52  6.41  7.42      0.02194    *
-## 3        beerpercap    21.07  6.77 11.34      0.00957   **
-## 4        winepercap   -19.10 15.36  6.25      0.25830     
-## 5  factor(year)1970    32.52  9.42 24.19      0.00206   **
-## 6  factor(year)1971    31.17  9.52 24.51      0.00316   **
-## 7  factor(year)1972    33.63  9.68 24.44      0.00192   **
-## 8  factor(year)1973    34.22  9.15 24.20      0.00100   **
-## 9  factor(year)1974    26.91  8.74 23.98      0.00514   **
-## 10 factor(year)1975    25.50  8.87 23.87      0.00836   **
-## 11 factor(year)1976    28.49  9.00 23.59      0.00422   **
-## 12 factor(year)1977    30.29  8.89 23.14      0.00241   **
-## 13 factor(year)1978    32.23  8.95 23.11      0.00150   **
-## 14 factor(year)1979    32.08  9.21 23.06      0.00200   **
-## 15 factor(year)1980    30.81  9.39 23.44      0.00321   **
-## 16 factor(year)1981    26.12  9.59 23.90      0.01187    *
-## 17 factor(year)1982    20.04  9.29 23.93      0.04119    *
-## 18 factor(year)1983    19.60  9.56 23.96      0.05134    .
-## 19 factor(year)1984    21.43  9.56 24.37      0.03437    *
-## 20 factor(year)1985    20.48  9.49 24.59      0.04092    *
-## 21 factor(year)1986    23.63  9.98 24.42      0.02612    *
-## 22 factor(year)1987    20.78 10.03 24.16      0.04915    *
-## 23 factor(year)1988    22.35 10.42 23.89      0.04230    *
-## 24 factor(year)1989    16.76 10.21 23.71      0.11396     
-## 25 factor(year)1990    15.31 10.04 23.32      0.14088     
-## 26 factor(year)1991    13.69  9.92 23.18      0.18075     
-## 27 factor(year)1992     8.71  9.91 23.72      0.38790     
-## 28 factor(year)1993     9.72  9.87 23.11      0.33517     
-## 29 factor(year)1994    11.30  9.57 23.02      0.24991     
-## 30 factor(year)1995    10.58  9.44 23.20      0.27394     
-## 31 factor(year)1996    10.96  9.76 23.35      0.27271</code></pre>
-<pre class="r"><code># re-scaling the weights
-coef_test(update(wls_pooled, weights = pop / 100), vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]</code></pre>
-<pre><code>##         Coef Estimate    SE  d.f. p-val (Satt) Sig.
-## 1      legal    -4.24  4.87 16.99      0.39666     
-## 2   beertaxa    18.52  6.41  7.42      0.02194    *
-## 3 beerpercap    21.07  6.77 11.34      0.00957   **
-## 4 winepercap   -19.10 15.36  6.25      0.25830</code></pre>
-<pre class="r"><code>coef_test(update(wls_pooled, weights = pop), vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]</code></pre>
-<pre><code>##         Coef Estimate   SE  d.f. p-val (Satt) Sig.
-## 1      legal    -4.24 3.45 21.89      0.23253     
-## 2   beertaxa    18.52 5.41  6.71      0.01181    *
-## 3 beerpercap    21.07 5.27 10.81      0.00217   **
-## 4 winepercap   -19.10 7.60 20.44      0.02042    *</code></pre>
-<pre class="r"><code># p-weighted
-coef_test(wls_pooled, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]</code></pre>
-<pre><code>##         Coef Estimate    SE d.f. p-val (Satt) Sig.
-## 1      legal    -4.24  5.40 6.38       0.4608     
-## 2   beertaxa    18.52  6.43 7.03       0.0235    *
-## 3 beerpercap    21.07  6.79 4.15       0.0343    *
-## 4 winepercap   -19.10 19.24 1.96       0.4272</code></pre>
-<pre class="r"><code>coef_test(update(wls_pooled, weights = pop / 100), vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]</code></pre>
-<pre><code>##         Coef Estimate    SE d.f. p-val (Satt) Sig.
-## 1      legal    -4.24  5.40 6.38       0.4608     
-## 2   beertaxa    18.52  6.43 7.03       0.0235    *
-## 3 beerpercap    21.07  6.79 4.15       0.0343    *
-## 4 winepercap   -19.10 19.24 1.96       0.4272</code></pre>
-<pre class="r"><code>coef_test(update(wls_pooled, weights = pop), vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]</code></pre>
-<pre><code>##         Coef Estimate    SE d.f. p-val (Satt) Sig.
-## 1      legal    -4.24  5.40 6.38       0.4608     
-## 2   beertaxa    18.52  6.43 7.03       0.0235    *
-## 3 beerpercap    21.07  6.79 4.15       0.0343    *
-## 4 winepercap   -19.10 19.24 1.96       0.4272</code></pre>
-<p>To check that absorption is working correctly, replicate the following analysis while absorbing the state fixed effects:</p>
-<pre class="r"><code># unweighted
-ols_within &lt;- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = &quot;individual&quot;, index = c(&quot;state&quot;,&quot;year&quot;))</code></pre>
-<pre><code>## This series is constant and has been removed: cause</code></pre>
-<pre class="r"><code>coef_test(ols_within, vcov = &quot;CR2&quot;)</code></pre>
-<pre><code>##                Coef Estimate    SE  d.f. p-val (Satt) Sig.
-## 1             legal    0.167  2.40 40.76      0.94493     
-## 2          beertaxa   -1.150  6.16  8.36      0.85641     
-## 3        beerpercap   32.100 11.28 28.76      0.00807   **
-## 4        winepercap    9.196 19.38 16.13      0.64148     
-## 5  factor(year)1971   -5.114  2.39 48.88      0.03711    *
-## 6  factor(year)1972   -1.740  1.83 48.86      0.34513     
-## 7  factor(year)1973   -3.233  1.94 48.35      0.10251     
-## 8  factor(year)1974  -13.262  2.83 47.54      &lt; 0.001  ***
-## 9  factor(year)1975  -16.796  2.99 47.09      &lt; 0.001  ***
-## 10 factor(year)1976  -12.649  2.89 46.80      &lt; 0.001  ***
-## 11 factor(year)1977  -11.438  3.13 47.13      &lt; 0.001  ***
-## 12 factor(year)1978  -12.759  3.45 46.56      &lt; 0.001  ***
-## 13 factor(year)1979  -13.844  4.00 46.18      0.00117   **
-## 14 factor(year)1980  -14.871  3.67 46.26      &lt; 0.001  ***
-## 15 factor(year)1981  -20.604  4.04 46.06      &lt; 0.001  ***
-## 16 factor(year)1982  -26.880  4.28 46.11      &lt; 0.001  ***
-## 17 factor(year)1983  -28.919  4.60 46.36      &lt; 0.001  ***
-## 18 factor(year)1984  -25.577  4.49 46.59      &lt; 0.001  ***
-## 19 factor(year)1985  -27.994  4.89 46.24      &lt; 0.001  ***
-## 20 factor(year)1986  -23.928  4.38 46.70      &lt; 0.001  ***
-## 21 factor(year)1987  -26.212  4.68 47.18      &lt; 0.001  ***
-## 22 factor(year)1988  -23.774  4.57 47.24      &lt; 0.001  ***
-## 23 factor(year)1989  -29.079  4.41 47.70      &lt; 0.001  ***
-## 24 factor(year)1990  -29.778  4.12 47.42      &lt; 0.001  ***
-## 25 factor(year)1991  -31.210  4.27 47.54      &lt; 0.001  ***
-## 26 factor(year)1992  -35.356  4.41 47.48      &lt; 0.001  ***
-## 27 factor(year)1993  -35.254  4.51 47.60      &lt; 0.001  ***
-## 28 factor(year)1994  -31.649  3.94 47.47      &lt; 0.001  ***
-## 29 factor(year)1995  -33.356  4.03 47.38      &lt; 0.001  ***
-## 30 factor(year)1996  -33.870  4.07 47.01      &lt; 0.001  ***</code></pre>
-<pre class="r"><code># a-weighted
-wls_within &lt;- lm(update(specification, . ~ . + factor(state)), weights = pop_scale, data = MV_Mortality)
-relevant_coefs &lt;- !grepl(&quot;factor\\(state\\)&quot;, names(coef(wls_within)))
-coef_test(wls_within, vcov = &quot;CR2&quot;, 
-          cluster = MV_Mortality$state, 
-          inverse_var = TRUE)[relevant_coefs, ]</code></pre>
-<pre><code>##                Coef Estimate   SE  d.f. p-val (Satt) Sig.
-## 1             legal     2.21 2.02 23.12      0.28496     
-## 2          beertaxa     4.83 4.82  8.63      0.34348     
-## 3        beerpercap    24.16 6.36 24.24      &lt; 0.001  ***
-## 4        winepercap     6.00 9.64  7.50      0.55181     
-## 5  factor(year)1970    41.13 6.51 22.12      &lt; 0.001  ***
-## 6  factor(year)1971    38.63 6.70 21.90      &lt; 0.001  ***
-## 7  factor(year)1972    40.46 6.65 21.96      &lt; 0.001  ***
-## 8  factor(year)1973    39.51 6.98 21.91      &lt; 0.001  ***
-## 9  factor(year)1974    30.84 7.39 21.98      &lt; 0.001  ***
-## 10 factor(year)1975    28.58 7.26 21.84      &lt; 0.001  ***
-## 11 factor(year)1976    31.24 7.14 22.02      &lt; 0.001  ***
-## 12 factor(year)1977    33.49 7.37 21.73      &lt; 0.001  ***
-## 13 factor(year)1978    34.68 7.23 21.71      &lt; 0.001  ***
-## 14 factor(year)1979    34.17 7.36 21.69      &lt; 0.001  ***
-## 15 factor(year)1980    32.37 7.45 21.36      &lt; 0.001  ***
-## 16 factor(year)1981    27.31 7.50 21.49      0.00147   **
-## 17 factor(year)1982    21.16 7.63 21.74      0.01119    *
-## 18 factor(year)1983    21.05 7.48 21.64      0.01018    *
-## 19 factor(year)1984    23.03 7.01 22.02      0.00339   **
-## 20 factor(year)1985    22.09 7.15 21.69      0.00543   **
-## 21 factor(year)1986    25.94 7.25 22.09      0.00166   **
-## 22 factor(year)1987    24.24 7.29 22.29      0.00302   **
-## 23 factor(year)1988    26.50 7.32 22.28      0.00150   **
-## 24 factor(year)1989    21.67 7.09 22.33      0.00575   **
-## 25 factor(year)1990    20.26 7.49 22.18      0.01290    *
-## 26 factor(year)1991    19.59 7.24 22.24      0.01280    *
-## 27 factor(year)1992    14.37 7.13 22.85      0.05581    .
-## 28 factor(year)1993    15.78 7.13 22.47      0.03743    *
-## 29 factor(year)1994    17.32 7.14 21.94      0.02393    *
-## 30 factor(year)1995    16.44 7.30 22.20      0.03449    *
-## 31 factor(year)1996    16.34 7.00 21.99      0.02914    *</code></pre>
-<pre class="r"><code># p-weighted
-coef_test(wls_within, vcov = &quot;CR2&quot;, 
-          cluster = MV_Mortality$state, 
-          inverse_var = FALSE, ignore_FE = TRUE)[relevant_coefs, ]</code></pre>
-<pre><code>##                Coef Estimate    SE  d.f. p-val (Satt) Sig.
-## 1             legal     2.21  2.08  8.89      0.31595     
-## 2          beertaxa     4.83  4.82  8.77      0.34313     
-## 3        beerpercap    24.16  6.35 11.16      0.00286   **
-## 4        winepercap     6.00 11.06  2.07      0.64020     
-## 5  factor(year)1970    41.13  6.51  9.02      &lt; 0.001  ***
-## 6  factor(year)1971    38.63  6.74  9.03      &lt; 0.001  ***
-## 7  factor(year)1972    40.46  6.67  9.47      &lt; 0.001  ***
-## 8  factor(year)1973    39.51  7.02  9.47      &lt; 0.001  ***
-## 9  factor(year)1974    30.84  7.45 10.41      0.00184   **
-## 10 factor(year)1975    28.58  7.33  9.97      0.00298   **
-## 11 factor(year)1976    31.24  7.22 10.59      0.00131   **
-## 12 factor(year)1977    33.49  7.38 10.27      0.00101   **
-## 13 factor(year)1978    34.68  7.27 10.44      &lt; 0.001  ***
-## 14 factor(year)1979    34.17  7.40 10.54      &lt; 0.001  ***
-## 15 factor(year)1980    32.37  7.53 10.24      0.00148   **
-## 16 factor(year)1981    27.31  7.62 10.34      0.00471   **
-## 17 factor(year)1982    21.16  7.74  9.73      0.02161    *
-## 18 factor(year)1983    21.05  7.60  9.71      0.02025    *
-## 19 factor(year)1984    23.03  7.12 10.03      0.00889   **
-## 20 factor(year)1985    22.09  7.25  9.42      0.01318    *
-## 21 factor(year)1986    25.94  7.39  9.51      0.00606   **
-## 22 factor(year)1987    24.24  7.39  9.47      0.00892   **
-## 23 factor(year)1988    26.50  7.45  9.33      0.00582   **
-## 24 factor(year)1989    21.67  7.19  9.29      0.01415    *
-## 25 factor(year)1990    20.26  7.58  9.05      0.02547    *
-## 26 factor(year)1991    19.59  7.30  9.63      0.02359    *
-## 27 factor(year)1992    14.37  7.20 10.63      0.07217    .
-## 28 factor(year)1993    15.78  7.22  9.51      0.05512    .
-## 29 factor(year)1994    17.32  7.20  8.72      0.04041    *
-## 30 factor(year)1995    16.44  7.39  9.47      0.05161    .
-## 31 factor(year)1996    16.34  7.12  8.97      0.04752    *</code></pre>
-</div>
-<div id="task-2-clubsandwich-f-test" class="section level1">
-<h1>Task 2: clubSandwich F-test</h1>
-<p>Develop a post-estimation command for testing multiple linear constraints on the regression specification, using the small-sample F-test developed in Pustejovsky &amp; Tipton (2016). The command should follow the same basic syntax as the <code>test</code> command:</p>
-<pre><code>test_sandwich &lt;spec&gt; [&lt;spec&gt; ...]</code></pre>
-<p>where <code>&lt;spec&gt;</code> may be a <code>coeflist</code> or a set of expressions <code>exp = exp [= exp ...]</code>. As with your work on <code>robumeta</code>, it may make sense to implement the t-tests in Task 1 using the <code>test_sandwich</code> command.</p>
-<p>To verify that the command is correct, replicate the following analysis:</p>
-<pre class="r"><code>constraints &lt;- c(combn(4,2,simplify=FALSE), combn(4,3,simplify = FALSE), list(1:4))
-
-# unweighted, without state effects
-Wald_test(ols_pooled, constraints = constraints, 
+<pre class="r"><code>Wald_test(ols_pooled, constraints = constraints, 
           vcov = &quot;CR2&quot;, cluster = MV_Mortality$state) %&gt;% 
   bind_rows()</code></pre>
 <pre><code>##  Test      F d.f.   p.val
@@ -404,8 +237,23 @@ Wald_test(ols_pooled, constraints = constraints,
 ##     9  5.426 17.3 0.00819
 ##    10  7.601 13.5 0.00320
 ##    11  5.803 16.3 0.00427</code></pre>
-<pre class="r"><code># a-weighted, without state effects
-Wald_test(wls_pooled, constraints = constraints, 
+</div>
+<div id="a-weights" class="section level2">
+<h2><span class="header-section-number">2.2</span> a-weights</h2>
+<pre class="r"><code>wls_pooled &lt;- lm(specification, weights = pop_scale, data = MV_Mortality)
+vcovCR(wls_pooled, cluster = MV_Mortality$state, type = &quot;CR2&quot;, inverse_var = TRUE)[1:4,1:4]</code></pre>
+<pre><code>##                 legal  beertaxa beerpercap winepercap
+## legal       23.732610 -9.976276  -19.44657  -4.707518
+## beertaxa    -9.976276 41.114919   20.08675  19.904657
+## beerpercap -19.446574 20.086751   45.83896 -26.374096
+## winepercap  -4.707518 19.904657  -26.37410 235.870336</code></pre>
+<pre class="r"><code>coef_test(wls_pooled, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]</code></pre>
+<pre><code>##         Coef Estimate    SE  d.f. p-val (Satt) Sig.
+## 1      legal    -4.24  4.87 16.99      0.39666     
+## 2   beertaxa    18.52  6.41  7.42      0.02194    *
+## 3 beerpercap    21.07  6.77 11.34      0.00957   **
+## 4 winepercap   -19.10 15.36  6.25      0.25830</code></pre>
+<pre class="r"><code>Wald_test(wls_pooled, constraints = constraints, 
           vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE) %&gt;% 
   bind_rows()</code></pre>
 <pre><code>##  Test    F  d.f.  p.val
@@ -420,8 +268,16 @@ Wald_test(wls_pooled, constraints = constraints,
 ##     9 3.10 10.10 0.0757
 ##    10 3.80  9.86 0.0478
 ##    11 2.83  9.81 0.0844</code></pre>
-<pre class="r"><code># p-weighted, without state effects
-Wald_test(wls_pooled, constraints = constraints, 
+</div>
+<div id="p-weights" class="section level2">
+<h2><span class="header-section-number">2.3</span> p-weights</h2>
+<pre class="r"><code>coef_test(wls_pooled, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]</code></pre>
+<pre><code>##         Coef Estimate    SE d.f. p-val (Satt) Sig.
+## 1      legal    -4.24  5.40 6.38       0.4608     
+## 2   beertaxa    18.52  6.43 7.03       0.0235    *
+## 3 beerpercap    21.07  6.79 4.15       0.0343    *
+## 4 winepercap   -19.10 19.24 1.96       0.4272</code></pre>
+<pre class="r"><code>Wald_test(wls_pooled, constraints = constraints, 
           vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE) %&gt;% 
   bind_rows()</code></pre>
 <pre><code>##  Test     F d.f.  p.val
@@ -436,9 +292,22 @@ Wald_test(wls_pooled, constraints = constraints,
 ##     9 2.153 2.83 0.2805
 ##    10 2.706 3.53 0.1958
 ##    11 1.778 3.18 0.3242</code></pre>
-<pre class="r"><code># unweighted, with state effects
-Wald_test(ols_within, constraints = constraints, 
-          vcov = &quot;CR2&quot;) %&gt;% 
+</div>
+</div>
+<div id="lm-with-state-effects" class="section level1">
+<h1><span class="header-section-number">3</span> lm with state effects</h1>
+<div id="unweighted-1" class="section level2">
+<h2><span class="header-section-number">3.1</span> unweighted</h2>
+<pre class="r"><code>state_spec &lt;- update(specification, . ~ 0 + . + factor(state))
+ols_state &lt;- lm(state_spec, data = MV_Mortality)
+coef_test(ols_state, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state)[1:4,]</code></pre>
+<pre><code>##         Coef Estimate    SE  d.f. p-val (Satt) Sig.
+## 1      legal    0.167  2.40 40.76      0.94493     
+## 2   beertaxa   -1.150  6.16  8.36      0.85641     
+## 3 beerpercap   32.100 11.28 28.76      0.00807   **
+## 4 winepercap    9.196 19.38 16.13      0.64148</code></pre>
+<pre class="r"><code>Wald_test(ols_state, constraints = constraints, 
+          vcov = &quot;CR2&quot;, cluster = MV_Mortality$state) %&gt;% 
   bind_rows()</code></pre>
 <pre><code>##  Test      F d.f.   p.val
 ##     1 0.0166 16.3 0.98354
@@ -452,8 +321,23 @@ Wald_test(ols_within, constraints = constraints,
 ##     9 3.9940 28.4 0.01722
 ##    10 4.3295 17.0 0.01928
 ##    11 3.1673 20.6 0.03530</code></pre>
-<pre class="r"><code># a-weighted, with state effects
-Wald_test(wls_within, constraints = constraints, 
+</div>
+<div id="a-weights-1" class="section level2">
+<h2><span class="header-section-number">3.2</span> a-weights</h2>
+<pre class="r"><code>wls_state &lt;- lm(state_spec, weights = pop_scale, data = MV_Mortality)
+vcovCR(wls_state, cluster = MV_Mortality$state, type = &quot;CR2&quot;, inverse_var = TRUE)[1:4,1:4]</code></pre>
+<pre><code>##                 legal  beertaxa  beerpercap winepercap
+## legal       4.0886234 -4.949647   0.7052533   5.780316
+## beertaxa   -4.9496470 23.252941   3.6706687  -9.671751
+## beerpercap  0.7052533  3.670669  40.3889947 -11.561580
+## winepercap  5.7803161 -9.671751 -11.5615800  92.839168</code></pre>
+<pre class="r"><code>coef_test(wls_state, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]</code></pre>
+<pre><code>##         Coef Estimate   SE  d.f. p-val (Satt) Sig.
+## 1      legal     2.21 2.02 23.12        0.285     
+## 2   beertaxa     4.83 4.82  8.63        0.343     
+## 3 beerpercap    24.16 6.36 24.24       &lt;0.001  ***
+## 4 winepercap     6.00 9.64  7.50        0.552</code></pre>
+<pre class="r"><code>Wald_test(wls_state, constraints = constraints, 
           vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = TRUE) %&gt;% 
   bind_rows()</code></pre>
 <pre><code>##  Test     F d.f.   p.val
@@ -468,9 +352,17 @@ Wald_test(wls_within, constraints = constraints,
 ##     9 4.782 13.0 0.01845
 ##    10 4.799 11.1 0.02229
 ##    11 3.571 11.4 0.04071</code></pre>
-<pre class="r"><code># p-weighted, with state effects
-Wald_test(wls_within, constraints = constraints, 
-          vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE) %&gt;% 
+</div>
+<div id="p-weights-1" class="section level2">
+<h2><span class="header-section-number">3.3</span> p-weights</h2>
+<pre class="r"><code>coef_test(wls_state, vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]</code></pre>
+<pre><code>##         Coef Estimate    SE  d.f. p-val (Satt) Sig.
+## 1      legal     2.21  2.08  8.89      0.31595     
+## 2   beertaxa     4.83  4.82  8.77      0.34313     
+## 3 beerpercap    24.16  6.35 11.16      0.00286   **
+## 4 winepercap     6.00 11.06  2.07      0.64020</code></pre>
+<pre class="r"><code>Wald_test(wls_state, constraints = constraints, 
+          vcov = &quot;CR2&quot;, cluster = MV_Mortality$state, inverse_var = FALSE) %&gt;% 
   bind_rows()</code></pre>
 <pre><code>##  Test     F d.f.  p.val
 ##     1 2.051 8.57 0.1872
@@ -485,8 +377,114 @@ Wald_test(wls_within, constraints = constraints,
 ##    10 3.527 3.85 0.1320
 ##    11 2.320 3.48 0.2361</code></pre>
 </div>
+</div>
+<div id="absorbing-state-effects" class="section level1">
+<h1><span class="header-section-number">4</span> Absorbing state effects</h1>
+<p>To check that absorption is working correctly, replicate the following analysis while absorbing the state fixed effects.</p>
+<div id="unweighted-2" class="section level2">
+<h2><span class="header-section-number">4.1</span> unweighted</h2>
+<pre class="r"><code>ols_within &lt;- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = &quot;individual&quot;, index = c(&quot;state&quot;,&quot;year&quot;))</code></pre>
+<pre><code>## This series is constant and has been removed: cause</code></pre>
+<pre class="r"><code>coef_test(ols_within, vcov = &quot;CR2&quot;)[1:4,]</code></pre>
+<pre><code>##         Coef Estimate    SE  d.f. p-val (Satt) Sig.
+## 1      legal    0.167  2.40 40.76      0.94493     
+## 2   beertaxa   -1.150  6.16  8.36      0.85641     
+## 3 beerpercap   32.100 11.28 28.76      0.00807   **
+## 4 winepercap    9.196 19.38 16.13      0.64148</code></pre>
+<pre class="r"><code>Wald_test(ols_within, constraints = constraints, 
+          vcov = &quot;CR2&quot;) %&gt;% 
+  bind_rows()</code></pre>
+<pre><code>##  Test      F d.f.   p.val
+##     1 0.0166 16.3 0.98354
+##     2 4.0817 35.2 0.02544
+##     3 0.1089 25.4 0.89720
+##     4 6.1705 13.3 0.01273
+##     5 0.1195 13.9 0.88826
+##     6 6.1333 23.5 0.00719
+##     7 3.9962 18.6 0.02344
+##     8 0.0774 19.2 0.97147
+##     9 3.9940 28.4 0.01722
+##    10 4.3295 17.0 0.01928
+##    11 3.1673 20.6 0.03530</code></pre>
+</div>
+<div id="a-weights-2" class="section level2">
+<h2><span class="header-section-number">4.2</span> a-weights</h2>
+<pre class="r"><code>MV_Mortality_full &lt;- model.frame(lm(state_spec, weights = pop_scale, data = MV_Mortality))
+
+U_mat &lt;- model.matrix(specification, data = MV_Mortality_full)
+T_mat &lt;- model.matrix(~ factor(state), data = MV_Mortality_full)
+w &lt;- MV_Mortality_full$&quot;(weights)&quot;
+state &lt;- MV_Mortality_full$&quot;factor(state)&quot;
+U_absorb &lt;- residuals(stats:::lm.wfit(x = T_mat, y = U_mat, w = w))[,-31]
+Y_absorb &lt;- residuals(stats:::lm.wfit(x = T_mat, y = MV_Mortality_full$mrate, w = w))
+
+wls_within &lt;- lm(Y_absorb ~ 0 + U_absorb, weights = w)
+vcovCR(wls_within, cluster = state, type = &quot;CR2&quot;, inverse_var = TRUE)[1:4,1:4]</code></pre>
+<pre><code>##                    U_absorblegal U_absorbbeertaxa U_absorbbeerpercap
+## U_absorblegal          4.1064068        -4.981048          0.7020804
+## U_absorbbeertaxa      -4.9810482        23.333060          3.7157788
+## U_absorbbeerpercap     0.7020804         3.715779         40.5769349
+## U_absorbwinepercap     5.8209535        -9.784356        -11.6545366
+##                    U_absorbwinepercap
+## U_absorblegal                5.820954
+## U_absorbbeertaxa            -9.784356
+## U_absorbbeerpercap         -11.654537
+## U_absorbwinepercap          93.226628</code></pre>
+<pre class="r"><code>coef_test(wls_within, vcov = &quot;CR2&quot;, cluster = state, inverse_var = TRUE)[1:4,]</code></pre>
+<pre><code>##                 Coef Estimate   SE  d.f. p-val (Satt) Sig.
+## 1      U_absorblegal     2.21 2.03 23.12        0.286     
+## 2   U_absorbbeertaxa     4.83 4.83  8.65        0.344     
+## 3 U_absorbbeerpercap    24.16 6.37 24.23       &lt;0.001  ***
+## 4 U_absorbwinepercap     6.00 9.66  7.52        0.553</code></pre>
+<pre class="r"><code>Wald_test(wls_within, constraints = constraints, 
+          vcov = &quot;CR2&quot;, cluster = state, inverse_var = TRUE) %&gt;% 
+  bind_rows()</code></pre>
+<pre><code>##  Test     F  d.f.   p.val
+##     1 2.082 13.99 0.16163
+##     2 7.248 21.51 0.00392
+##     3 0.588 10.33 0.57308
+##     4 6.788 12.30 0.01032
+##     5 0.780  9.43 0.48607
+##     6 7.525 12.58 0.00709
+##     7 4.866 14.87 0.01486
+##     8 1.307 10.66 0.32273
+##     9 4.764 13.06 0.01865
+##    10 4.780 11.11 0.02250
+##    11 3.557 11.41 0.04108</code></pre>
+</div>
+<div id="p-weights-2" class="section level2">
+<h2><span class="header-section-number">4.3</span> p-weights</h2>
+<pre class="r"><code>coef_test(wls_within, vcov = &quot;CR2&quot;, cluster = state, inverse_var = FALSE)[1:4,]</code></pre>
+<pre><code>##                 Coef Estimate    SE  d.f. p-val (Satt) Sig.
+## 1      U_absorblegal     2.21  2.09  8.90       0.3171     
+## 2   U_absorbbeertaxa     4.83  4.83  8.78       0.3440     
+## 3 U_absorbbeerpercap    24.16  6.37 11.16       0.0029   **
+## 4 U_absorbwinepercap     6.00 11.08  2.07       0.6406</code></pre>
+<pre class="r"><code>Wald_test(wls_within, constraints = constraints, 
+          vcov = &quot;CR2&quot;, cluster = state, inverse_var = FALSE, ignore_FE = TRUE) %&gt;% 
+  bind_rows()</code></pre>
+<pre><code>##  Test     F d.f.  p.val
+##     1 2.048 8.57 0.1874
+##     2 6.684 8.85 0.0170
+##     3 0.449 2.77 0.6777
+##     4 6.696 9.49 0.0154
+##     5 0.585 3.08 0.6089
+##     6 5.839 3.20 0.0854
+##     7 4.400 8.28 0.0400
+##     8 0.992 3.27 0.4959
+##     9 3.239 3.33 0.1660
+##    10 3.513 3.85 0.1325
+##    11 2.312 3.49 0.2369</code></pre>
+</div>
+</div>
+<div id="task-2-clubsandwich-f-test" class="section level1">
+<h1><span class="header-section-number">5</span> Task 2: clubSandwich F-test</h1>
+<p>Develop a post-estimation command for testing multiple linear constraints on the regression specification, using the small-sample F-test developed in Pustejovsky &amp; Tipton (2016). The command should follow the same basic syntax as the <code>test</code> command:</p>
+<pre><code>test_sandwich &lt;spec&gt; [&lt;spec&gt; ...]</code></pre>
+<p>where <code>&lt;spec&gt;</code> may be a <code>coeflist</code> or a set of expressions <code>exp = exp [= exp ...]</code>. As with your work on <code>robumeta</code>, it may make sense to implement the t-tests in Task 1 using the <code>test_sandwich</code> command.</p>
+</div>
 <div id="r-session-information" class="section level1">
-<h1>R session information</h1>
+<h1><span class="header-section-number">6</span> R session information</h1>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>## R version 3.3.2 (2016-10-31)
 ## Platform: x86_64-w64-mingw32/x64 (64-bit)

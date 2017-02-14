@@ -1,8 +1,10 @@
 ---
 title: "clubSandwich-Stata-functions"
 author: "James E. Pustejovsky"
-date: "December 12, 2016"
-output: html_document
+output: 
+  html_document: 
+    number_sections: yes
+    toc: yes
 ---
 
 # Task 1: clubSandwich versions of reg and areg
@@ -26,7 +28,9 @@ If the `absorb` option is present, then the model should be fit as in `areg`. If
 * If `pweight`s are used, then the working variance matrix should be an identity matix.
 * If `aweight`s are used, then the working variance matrix should be diagonal with diagonal entries equal to the inverses of the weights (i.e., we assume that the weights are inverse-variance). 
 
-To verify that the command is correct, replicate the following analysis:
+To verify that the command is correct, replicate the following analysis.
+
+# lm without state effects
 
 ```{r, message = FALSE}
 library(haven)
@@ -46,45 +50,132 @@ MV_Mortality$pop_scale <- with(MV_Mortality, pop / mean(pop))
 
 specification <- mrate ~ 0 + legal + beertaxa + beerpercap + winepercap + factor(year)
   
-# unweighted
+# F-test specifications
+constraints <- c(combn(4,2,simplify=FALSE), combn(4,3,simplify = FALSE), list(1:4))
+```
+
+## unweighted
+
+```{r, message = FALSE}
 ols_pooled <- lm(specification, data = MV_Mortality)
 coef_test(ols_pooled, vcov = "CR2", cluster = MV_Mortality$state)
 
-# a-weighted
-wls_pooled <- lm(specification, weights = pop_scale, data = MV_Mortality)
-vcovCR(wls_pooled, cluster = MV_Mortality$state, type = "CR2", inverse_var = TRUE)[1:4,1:4]
-coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+Wald_test(ols_pooled, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state) %>% 
+  bind_rows()
 
-# re-scaling the weights
-coef_test(update(wls_pooled, weights = pop / 100), vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]
-coef_test(update(wls_pooled, weights = pop), vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]
-
-# p-weighted
-coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]
-coef_test(update(wls_pooled, weights = pop / 100), vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]
-coef_test(update(wls_pooled, weights = pop), vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]
 ```
 
-To check that absorption is working correctly, replicate the following analysis while absorbing the state fixed effects:
+## a-weights
+
+```{r}
+wls_pooled <- lm(specification, weights = pop_scale, data = MV_Mortality)
+vcovCR(wls_pooled, cluster = MV_Mortality$state, type = "CR2", inverse_var = TRUE)[1:4,1:4]
+coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]
+
+Wald_test(wls_pooled, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE) %>% 
+  bind_rows()
+
+```
+
+## p-weights
+
+```{r}
+coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]
+
+Wald_test(wls_pooled, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE) %>% 
+  bind_rows()
+
+```
+
+# lm with state effects
+
+## unweighted
+
+```{r, message = FALSE}
+state_spec <- update(specification, . ~ 0 + . + factor(state))
+ols_state <- lm(state_spec, data = MV_Mortality)
+coef_test(ols_state, vcov = "CR2", cluster = MV_Mortality$state)[1:4,]
+
+Wald_test(ols_state, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state) %>% 
+  bind_rows()
+
+```
+
+## a-weights
+
+```{r}
+wls_state <- lm(state_spec, weights = pop_scale, data = MV_Mortality)
+vcovCR(wls_state, cluster = MV_Mortality$state, type = "CR2", inverse_var = TRUE)[1:4,1:4]
+coef_test(wls_state, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)[1:4,]
+
+Wald_test(wls_state, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE) %>% 
+  bind_rows()
+
+```
+
+## p-weights
+
+```{r}
+coef_test(wls_state, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)[1:4,]
+
+Wald_test(wls_state, constraints = constraints, 
+          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE) %>% 
+  bind_rows()
+
+```
+
+# Absorbing state effects
+
+To check that absorption is working correctly, replicate the following analysis while absorbing the state fixed effects.
+
+## unweighted
 
 ```{r, message = FALSE}
 
-# unweighted
 ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year"))
-coef_test(ols_within, vcov = "CR2")
+coef_test(ols_within, vcov = "CR2")[1:4,]
 
-# a-weighted
-wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop_scale, data = MV_Mortality)
-relevant_coefs <- !grepl("factor\\(state\\)", names(coef(wls_within)))
-coef_test(wls_within, vcov = "CR2", 
-          cluster = MV_Mortality$state, 
-          inverse_var = TRUE)[relevant_coefs, ]
+Wald_test(ols_within, constraints = constraints, 
+          vcov = "CR2") %>% 
+  bind_rows()
 
-# p-weighted
-coef_test(wls_within, vcov = "CR2", 
-          cluster = MV_Mortality$state, 
-          inverse_var = FALSE, ignore_FE = TRUE)[relevant_coefs, ]
+```
 
+## a-weights
+
+```{r}
+MV_Mortality_full <- model.frame(lm(state_spec, weights = pop_scale, data = MV_Mortality))
+
+U_mat <- model.matrix(specification, data = MV_Mortality_full)
+T_mat <- model.matrix(~ factor(state), data = MV_Mortality_full)
+w <- MV_Mortality_full$"(weights)"
+state <- MV_Mortality_full$"factor(state)"
+U_absorb <- residuals(stats:::lm.wfit(x = T_mat, y = U_mat, w = w))[,-31]
+Y_absorb <- residuals(stats:::lm.wfit(x = T_mat, y = MV_Mortality_full$mrate, w = w))
+
+wls_within <- lm(Y_absorb ~ 0 + U_absorb, weights = w)
+vcovCR(wls_within, cluster = state, type = "CR2", inverse_var = TRUE)[1:4,1:4]
+coef_test(wls_within, vcov = "CR2", cluster = state, inverse_var = TRUE)[1:4,]
+
+Wald_test(wls_within, constraints = constraints, 
+          vcov = "CR2", cluster = state, inverse_var = TRUE) %>% 
+  bind_rows()
+
+```
+
+## p-weights
+
+```{r}
+coef_test(wls_within, vcov = "CR2", cluster = state, inverse_var = FALSE)[1:4,]
+
+Wald_test(wls_within, constraints = constraints, 
+          vcov = "CR2", cluster = state, inverse_var = FALSE, ignore_FE = TRUE) %>% 
+  bind_rows()
 ```
 
 # Task 2: clubSandwich F-test
@@ -96,42 +187,6 @@ test_sandwich <spec> [<spec> ...]
 ```
 
 where `<spec>` may be a `coeflist` or a set of expressions `exp = exp [= exp ...]`. As with your work on `robumeta`, it may make sense to implement the t-tests in Task 1 using the `test_sandwich` command. 
-
-To verify that the command is correct, replicate the following analysis:
-```{r}
-constraints <- c(combn(4,2,simplify=FALSE), combn(4,3,simplify = FALSE), list(1:4))
-
-# unweighted, without state effects
-Wald_test(ols_pooled, constraints = constraints, 
-          vcov = "CR2", cluster = MV_Mortality$state) %>% 
-  bind_rows()
-
-# a-weighted, without state effects
-Wald_test(wls_pooled, constraints = constraints, 
-          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE) %>% 
-  bind_rows()
-
-# p-weighted, without state effects
-Wald_test(wls_pooled, constraints = constraints, 
-          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE) %>% 
-  bind_rows()
-
-# unweighted, with state effects
-Wald_test(ols_within, constraints = constraints, 
-          vcov = "CR2") %>% 
-  bind_rows()
-
-# a-weighted, with state effects
-Wald_test(wls_within, constraints = constraints, 
-          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE) %>% 
-  bind_rows()
-
-# p-weighted, with state effects
-Wald_test(wls_within, constraints = constraints, 
-          vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE) %>% 
-  bind_rows()
-
-```
 
 # R session information
 
