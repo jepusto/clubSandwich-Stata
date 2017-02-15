@@ -119,7 +119,7 @@ program define reg_sandwich, eclass sortpreserve
 	
     local x = r(varlist)
     foreach v in `olist' {
-        local x = regexr("`x'","o\.`v'","")
+        local x = regexr("`x' ","o\.`v' ","")
     }
 
     if "`x'" == "." local x ""
