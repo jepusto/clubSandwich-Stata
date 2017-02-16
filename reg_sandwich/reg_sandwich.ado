@@ -29,6 +29,8 @@ program define reg_sandwich, eclass sortpreserve
 	[noCONstant] ///
 	[Level(cilevel)]
 	
+	timer clear 
+	
 	*mark sample
     marksample touse
 	
@@ -137,9 +139,12 @@ program define reg_sandwich, eclass sortpreserve
 		}
 	}
 	** call main regression:
+	disp "timer 1 start: main regression"
+	timer on 1
 	*disp "`main_function' `t' `x' `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'"
 	noisily capture: `main_function' `t' `x'  `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'
-	
+	timer off 1
+	disp "timer 1 off"
 	if "`main_function'" == "areg" {
 		local old_x = "`x'"
 		local x = "`new_x'"
@@ -211,7 +216,8 @@ program define reg_sandwich, eclass sortpreserve
 				scalar `max_n' = r(max)
 	
 
-	
+	disp "timer 2 start: MXWTWXM"
+	timer on 2
 	if "`constant'"=="" & "`main_function'" != "areg" {
 		mkmat `x' `cons' if `touse', matrix(`X')
 		matrix colnames `X' = `x' _cons
@@ -251,7 +257,8 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	matrix drop `X'
-	
+	timer off 2
+	disp "timer 2 off"
 	
 	/********************************************************************/
     /*    Variance covariance matrix estimation for standard errors     */
@@ -265,7 +272,11 @@ program define reg_sandwich, eclass sortpreserve
 	local current_jcountFtest = 0
 	local endj = 0
 	
+	disp "timer 3 start: Ajs and save per cluster"
+	
     foreach j in `idlist' {
+	timer on 3
+	*disp "cluster `j'"
 		
 		if "`constant'"=="" & "`main_function'" != "areg" {
 			mkmat `x' `cons' if `touse' & `clusternumber' == `j', matrix(`Xj')
@@ -445,9 +456,10 @@ program define reg_sandwich, eclass sortpreserve
 		
 		
 			
-		
-    }
+		timer off 3
 	
+    }
+	disp "timer 3 off"
 
 	
 	*matrix drop `Aj' `Wj' `Xj' `middle_Aj'  `ej'
@@ -474,11 +486,12 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	matrix `_dfs' =  J(1,`p', 0) 
-							
+	disp "timer 4 start: T-tests i:j"					
 	forvalues i = 1/`m'{
 		* We use the symmetry here, since that temp(i,j) =temp(j,i)
 		forvalues j = `i'/`m'{
-
+		timer on 4
+		*disp "`i':`j'"
 			if `i' == `j'{
 	
 				matrix  `PThetaP' = `P`i'_Theta_P`i'_relevant'
@@ -557,9 +570,9 @@ program define reg_sandwich, eclass sortpreserve
 			
 		} 
 		
-		
+		timer off 4
 	}
-	
+	disp "timer 4 off"
 	forvalues coefficient = 1/`p' {
 		matrix `_dfs'[1,`coefficient'] = 2/`_dfs'[1,`coefficient']
 	}
@@ -714,6 +727,8 @@ program define reg_sandwich, eclass sortpreserve
 	else {
 		ereturn local constant_used = 0
 	}
-		
+	
+	disp "timers:"
+	timer list
 end
 	

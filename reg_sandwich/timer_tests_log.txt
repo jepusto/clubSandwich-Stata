@@ -1,0 +1,353 @@
+-------------------------------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\timer_tests_log.txt
+  log type:  text
+ opened on:  16 Feb 2017, 20:07:28
+
+. ***********************************************
+. display "Tests timer"
+Tests timer
+
+. 
+. use "MortalityRates", replace
+
+. 
+. * filter: cause=="Motor Vehicle"
+. label list cause
+cause:
+           1 All
+           2 Motor Vehicle
+           3 Suicide
+           4 Internal
+
+. keep if cause == 2
+(4,131 observations deleted)
+
+. 
+. * model specification
+. 
+. local specification = "mrate legal beertaxa beerpercap winepercap i.year"
+
+.   
+. * unweighted
+. * ols_pooled <- lm(specification, data = MV_Mortality)
+. *coef_test(ols_pooled, vcov = "CR2", cluster = MV_Mortality$state)
+. * xi, noomit: reg `specification', nocons cluster(state)
+. xi, noomit: reg_sandwich `specification', nocons cluster(state)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
+
+
+Robust standard error estimation using OLS
+                                                      N Level 1     =     1361
+                                                      N Level 2     =       51
+                                                      Min Level 1 n =       11
+                                                      Max Level 1 n =       27
+                                                      Average       =    26.69
+------------------------------------------------------------------------------
+       mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
+-------------+----------------------------------------------------------------
+       legal |      -4.004   4.65      36.01     0.3951    -13.4398  5.4309
+    beertaxa |      5.433    7.42       7.98     0.4851    -11.6872  22.5525
+  beerpercap |      38.663  11.59      19.89     0.0033    14.4697   62.8560
+  winepercap |      -43.787 13.45      10.08     0.0085    -73.7119  -13.8614
+ _Iyear_1970 |      32.458  10.82      34.82     0.0050    10.4874   54.4292
+ _Iyear_1971 |      29.543  11.50      34.13     0.0147    6.1737    52.9114
+ _Iyear_1972 |      33.044  10.80      34.17     0.0043    11.0973   54.9916
+ _Iyear_1973 |      32.288  11.24      34.18     0.0070    9.4477    55.1291
+ _Iyear_1974 |      22.629  11.75      33.81     0.0625    -1.2519   46.5102
+ _Iyear_1975 |      19.925  11.80      33.31     0.1006    -4.0707   43.9206
+ _Iyear_1976 |      24.485  12.22      33.12     0.0533    -0.3672   49.3378
+ _Iyear_1977 |      24.293  12.75      33.33     0.0653    -1.6280   50.2149
+ _Iyear_1978 |      23.739  12.84      32.73     0.0735    -2.3900   49.8678
+ _Iyear_1979 |      23.038  13.11      32.12     0.0883    -3.6550   49.7313
+ _Iyear_1980 |      22.679  13.11      32.05     0.0932    -4.0209   49.3796
+ _Iyear_1981 |      17.426  13.27      31.42     0.1986    -9.6205   44.4729
+ _Iyear_1982 |      11.485  13.21      31.41     0.3912    -15.4421  38.4116
+ _Iyear_1983 |      9.362   13.80      31.87     0.5023    -18.7457  37.4699
+ _Iyear_1984 |      13.106  13.17      31.99     0.3272    -13.7249  39.9374
+ _Iyear_1985 |      11.095  13.37      32.07     0.4128    -16.1387  38.3291
+ _Iyear_1986 |      14.747  13.06      31.40     0.2672    -11.8672  41.3621
+ _Iyear_1987 |      11.399  13.24      31.27     0.3958    -15.5912  38.3888
+ _Iyear_1988 |      12.727  13.87      31.42     0.3656    -15.5356  40.9901
+ _Iyear_1989 |      6.061   13.82      31.90     0.6639    -22.0890  34.2110
+ _Iyear_1990 |      4.733   13.70      31.34     0.7320    -23.1906  32.6574
+ _Iyear_1991 |      2.320   13.71      32.01     0.8667    -25.6059  30.2462
+ _Iyear_1992 |      -1.652  13.89      31.91     0.9061    -29.9576  26.6541
+ _Iyear_1993 |      -2.198  13.81      32.24     0.8745    -30.3141  25.9179
+ _Iyear_1994 |      1.434   13.09      32.25     0.9135    -25.2227  28.0902
+ _Iyear_1995 |      0.203   12.71      32.48     0.9874    -25.6718  26.0776
+ _Iyear_1996 |      0.357   13.00      32.36     0.9782    -26.1167  26.8313
+------------------------------------------------------------------------------
+timers:
+   1:      0.73 /        1 =       0.7280
+   2:      0.22 /        1 =       0.2200
+   3:      2.16 /       51 =       0.0423
+   4:     46.25 /       51 =       0.9070
+
+. /** Ftests:
+> test_sandwich legal beertaxa
+> test_sandwich legal beerpercap
+> test_sandwich legal winepercap
+> 
+> test_sandwich beertaxa beerpercap
+> test_sandwich beertaxa winepercap
+> 
+> test_sandwich beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap
+> test_sandwich legal beertaxa winepercap
+> test_sandwich legal beerpercap winepercap
+> test_sandwich beertaxa beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap winepercap
+> 
+> 
+> **/
+. 
+. * a-weighted
+. * wls_pooled <- lm(specification, weights = pop, data = MV_Mortality)
+. * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+. *xi, noomit: reg `specification' [aweight=pop], nocons cluster(state)
+. xi, noomit: reg_sandwich `specification' [aweight=pop], nocons cluster(state)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
+
+
+Robust standard error estimation using WLS (aweights)
+                                                      N Level 1     =     1361
+                                                      N Level 2     =       51
+                                                      Min Level 1 n =       11
+                                                      Max Level 1 n =       27
+                                                      Average       =    26.69
+------------------------------------------------------------------------------
+       mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
+-------------+----------------------------------------------------------------
+       legal |      -4.236   4.87      16.99     0.3967    -14.5148  6.0424
+    beertaxa |      18.519   6.41       7.42     0.0219    3.5300    33.5072
+  beerpercap |      21.066   6.77      11.34     0.0096    6.2189    35.9131
+  winepercap |      -19.099 15.36       6.25     0.2583    -56.3237  18.1258
+ _Iyear_1970 |      32.521   9.42      24.19     0.0021    13.0820   51.9592
+ _Iyear_1971 |      31.172   9.52      24.51     0.0032    11.5371   50.8071
+ _Iyear_1972 |      33.631   9.68      24.44     0.0019    13.6742   53.5880
+ _Iyear_1973 |      34.222   9.15      24.20     0.0010    15.3456   53.0986
+ _Iyear_1974 |      26.911   8.74      23.98     0.0051    8.8744    44.9467
+ _Iyear_1975 |      25.503   8.87      23.87     0.0084    7.1917    43.8138
+ _Iyear_1976 |      28.490   9.00      23.59     0.0042    9.9062    47.0731
+ _Iyear_1977 |      30.288   8.89      23.14     0.0024    11.8957   48.6811
+ _Iyear_1978 |      32.226   8.95      23.11     0.0015    13.7171   50.7357
+ _Iyear_1979 |      32.083   9.21      23.06     0.0020    13.0341   51.1313
+ _Iyear_1980 |      30.810   9.39      23.44     0.0032    11.4117   50.2079
+ _Iyear_1981 |      26.118   9.59      23.90     0.0119    6.3220    45.9131
+ _Iyear_1982 |      20.041   9.29      23.93     0.0412    0.8699    39.2122
+ _Iyear_1983 |      19.604   9.56      23.96     0.0513    -0.1235   39.3312
+ _Iyear_1984 |      21.435   9.56      24.37     0.0344    1.7131    41.1565
+ _Iyear_1985 |      20.476   9.49      24.59     0.0409    0.9152    40.0363
+ _Iyear_1986 |      23.631   9.98      24.42     0.0261    3.0546    44.2069
+ _Iyear_1987 |      20.785  10.03      24.16     0.0491    0.0841    41.4850
+ _Iyear_1988 |      22.348  10.42      23.89     0.0423    0.8428    43.8527
+ _Iyear_1989 |      16.759  10.21      23.71     0.1140    -4.3300   37.8482
+ _Iyear_1990 |      15.310  10.04      23.32     0.1409    -5.4514   36.0707
+ _Iyear_1991 |      13.689   9.92      23.18     0.1807    -6.8221   34.1997
+ _Iyear_1992 |      8.715    9.91      23.72     0.3879    -11.7460  29.1754
+ _Iyear_1993 |      9.717    9.87      23.11     0.3352    -10.6994  30.1324
+ _Iyear_1994 |      11.295   9.57      23.02     0.2499    -8.4995   31.0904
+ _Iyear_1995 |      10.576   9.44      23.20     0.2739    -8.9385   30.0899
+ _Iyear_1996 |      10.964   9.76      23.35     0.2727    -9.2102   31.1387
+------------------------------------------------------------------------------
+timers:
+   1:      0.06 /        1 =       0.0550
+   2:      2.91 /        1 =       2.9060
+   3:      3.29 /       51 =       0.0645
+   4:     45.31 /       51 =       0.8885
+
+. /**test_sandwich legal beertaxa
+> test_sandwich legal beerpercap
+> test_sandwich legal winepercap
+> 
+> test_sandwich beertaxa beerpercap
+> test_sandwich beertaxa winepercap
+> 
+> test_sandwich beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap
+> test_sandwich legal beertaxa winepercap
+> test_sandwich legal beerpercap winepercap
+> test_sandwich beertaxa beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap winepercap
+> **/
+. 
+. * p-weighted
+. * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)
+. *xi, noomit: reg `specification' [pweight=pop], nocons cluster(state)
+. xi, noomit: reg_sandwich `specification' [pweight=pop], nocons cluster(state)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
+
+
+Robust standard error estimation using WLS (pweights)
+                                                      N Level 1     =     1361
+                                                      N Level 2     =       51
+                                                      Min Level 1 n =       11
+                                                      Max Level 1 n =       27
+                                                      Average       =    26.69
+------------------------------------------------------------------------------
+       mrate |      Coef.   Std. Err.  dfs       p-value   [95%Conf. Interval]
+-------------+----------------------------------------------------------------
+       legal |      -4.236   5.40       6.38     0.4608    -17.2602  8.7878
+    beertaxa |      18.519   6.43       7.03     0.0235    3.3304    33.7069
+  beerpercap |      21.066   6.79       4.15     0.0343    2.4917    39.6403
+  winepercap | !    -19.099 19.24       1.96     0.4272    -1.0e+02  65.1782
+ _Iyear_1970 |      32.521   9.35       9.31     0.0066    11.4721   53.5691
+ _Iyear_1971 |      31.172   9.47       9.62     0.0086    9.9591    52.3851
+ _Iyear_1972 |      33.631   9.58       9.76     0.0058    12.2231   55.0391
+ _Iyear_1973 |      34.222   9.00       9.77     0.0036    14.0993   54.3449
+ _Iyear_1974 |      26.911   8.52       9.98     0.0102    7.9153    45.9059
+ _Iyear_1975 |      25.503   8.64       9.90     0.0147    6.2146    44.7908
+ _Iyear_1976 |      28.490   8.78       9.93     0.0089    8.9093    48.0700
+ _Iyear_1977 |      30.288   8.68       9.60     0.0062    10.8489   49.7278
+ _Iyear_1978 |      32.226   8.71       9.67     0.0043    12.7356   51.7172
+ _Iyear_1979 |      32.083   8.99       9.56     0.0055    11.9299   52.2355
+ _Iyear_1980 |      30.810   9.15       9.80     0.0073    10.3721   51.2475
+ _Iyear_1981 |      26.118   9.38      10.02     0.0193    5.2202    47.0149
+ _Iyear_1982 |      20.041   9.07       9.76     0.0522    -0.2346   40.3167
+ _Iyear_1983 |      19.604   9.33       9.59     0.0632    -1.3120   40.5197
+ _Iyear_1984 |      21.435   9.37       9.68     0.0460    0.4678    42.4018
+ _Iyear_1985 |      20.476   9.31       9.55     0.0538    -0.4055   41.3570
+ _Iyear_1986 |      23.631   9.87       9.23     0.0397    1.3783    45.8831
+ _Iyear_1987 |      20.785   9.96       8.90     0.0668    -1.7765   43.3455
+ _Iyear_1988 |      22.348  10.40       8.64     0.0615    -1.3380   46.0335
+ _Iyear_1989 |      16.759  10.17       8.46     0.1360    -6.4799   39.9982
+ _Iyear_1990 |      15.310   9.99       8.29     0.1627    -7.5936   38.2129
+ _Iyear_1991 |      13.689   9.88       8.19     0.2024    -9.0015   36.3791
+ _Iyear_1992 |      8.715    9.87       8.50     0.4015    -13.8143  31.2437
+ _Iyear_1993 |      9.717    9.85       7.97     0.3529    -13.0128  32.4458
+ _Iyear_1994 |      11.295   9.52       7.79     0.2703    -10.7584  33.3494
+ _Iyear_1995 |      10.576   9.44       8.01     0.2952    -11.1983  32.3498
+ _Iyear_1996 |      10.964   9.83       7.99     0.2972    -11.7142  33.6427
+------------------------------------------------------------------------------
+! dof is less than 4, p-value untrustworthy
+see Tipton, E. (in press) Small sample adjustments for robust variance
+estimation with meta-regression. Forthcoming in Psychological Methods.
+timers:
+   1:      0.05 /        1 =       0.0530
+   2:      5.44 /        1 =       5.4400
+   3:      3.97 /       51 =       0.0778
+   4:     65.85 /       51 =       1.2912
+
+. /**test_sandwich legal beertaxa
+> test_sandwich legal beerpercap
+> test_sandwich legal winepercap
+> 
+> test_sandwich beertaxa beerpercap
+> test_sandwich beertaxa winepercap
+> 
+> test_sandwich beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap
+> test_sandwich legal beertaxa winepercap
+> test_sandwich legal beerpercap winepercap
+> test_sandwich beertaxa beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap winepercap
+> 
+> 
+> ** with absorption: 
+> disp "WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level"
+> 
+> * unweighted
+> * ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year"))
+> *xi: areg `specification', absorb(state) cluster(state)
+> 
+> * compare results with explicit dummies
+> xi: reg_sandwich `specification' i.state,  cluster(state)
+> xi: reg_sandwich `specification', absorb(state) cluster(state)
+> test_sandwich legal beertaxa
+> test_sandwich legal beerpercap
+> test_sandwich legal winepercap
+> 
+> test_sandwich beertaxa beerpercap
+> test_sandwich beertaxa winepercap
+> 
+> test_sandwich beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap
+> test_sandwich legal beertaxa winepercap
+> test_sandwich legal beerpercap winepercap
+> test_sandwich beertaxa beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap winepercap
+> 
+> * a-weighted
+> * wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop, data = MV_Mortality)
+> * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
+> *xi, noomit: areg `specification' [aweight=pop], absorb(state) cluster(state)
+> 
+> * compare results with explicit dummies
+> xi, noomit: reg_sandwich `specification' i.state [aweight=pop], cluster(state)
+> xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
+> test_sandwich legal beertaxa
+> test_sandwich legal beerpercap
+> test_sandwich legal winepercap
+> 
+> test_sandwich beertaxa beerpercap
+> test_sandwich beertaxa winepercap
+> 
+> test_sandwich beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap
+> test_sandwich legal beertaxa winepercap
+> test_sandwich legal beerpercap winepercap
+> test_sandwich beertaxa beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap winepercap
+> 
+> * p-weighted
+> * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
+> *xi, noomit: areg `specification' [pweight=pop], absorb(state) cluster(state)
+> 
+> * compare results with explicit dummies
+> xi, noomit: reg_sandwich `specification' i.state [pweight=pop], cluster(state)
+> xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
+> test_sandwich legal beertaxa
+> test_sandwich legal beerpercap
+> test_sandwich legal winepercap
+> 
+> test_sandwich beertaxa beerpercap
+> test_sandwich beertaxa winepercap
+> 
+> test_sandwich beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap
+> test_sandwich legal beertaxa winepercap
+> test_sandwich legal beerpercap winepercap
+> test_sandwich beertaxa beerpercap winepercap
+> 
+> test_sandwich legal beertaxa beerpercap winepercap
+> **/
+. ****************
+. log close
+      name:  <unnamed>
+       log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\timer_tests_log.txt
+  log type:  text
+ closed on:  16 Feb 2017, 20:10:28
+-------------------------------------------------------------------------------------------------------------------------------------------------
