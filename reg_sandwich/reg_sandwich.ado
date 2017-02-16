@@ -310,18 +310,18 @@ program define reg_sandwich, eclass sortpreserve
 			matrix `Bj' = `Dj''*(`Tj'-`Xj'*`M'*`Xj'')*`Dj'
 		}
 		
-		mata: st_matrix( "`inv_Bj'", pinv( st_matrix( "`Bj'")))
-			
-		matsqrt `inv_Bj'
-		matrix drop `inv_Bj'
+		* Symmetric square root of the Moore-Penrose inverse of Bj
+		tempname evecs evals sq_inv_Bj
+		mat symeigen `evecs' `evals' = `Bj'
+		mata: st_matrix( "`sq_inv_Bj'", st_matrix( "`evecs'")*diag(editmissing(st_matrix( "`evals'"):^(-1/2),0))*st_matrix( "`evecs'")')
 											
 		if "`type_VCR'" == "WLSa" {
-			matrix `Aj' = `Dj'*(sq_`inv_Bj')*`Dj''
+			matrix `Aj' = `Dj'*(`sq_inv_Bj')*`Dj''
 		}
 		else {
-			matrix `Aj' = (sq_`inv_Bj')
+			matrix `Aj' = (`sq_inv_Bj')
 		}
-		matrix drop sq_`inv_Bj'	
+		matrix drop `sq_inv_Bj'	
 		
         mkmat `prime_resid' if `touse' & `clusternumber' == `j', matrix(`ej')
 		
