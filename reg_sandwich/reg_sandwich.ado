@@ -567,10 +567,10 @@ program define reg_sandwich, eclass sortpreserve
 				
 			}
 			matrix drop `PThetaP'
-			
+		timer off 4	
 		} 
 		
-		timer off 4
+		
 	}
 	disp "timer 4 off"
 	forvalues coefficient = 1/`p' {
