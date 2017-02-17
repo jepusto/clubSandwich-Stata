@@ -486,11 +486,12 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	matrix `_dfs' =  J(1,`p', 0) 
-	disp "timer 4 start: T-tests i:j"					
+	disp "timer 4 start: T-tests i:j"
+	timer on 4
 	forvalues i = 1/`m'{
 		* We use the symmetry here, since that temp(i,j) =temp(j,i)
 		forvalues j = `i'/`m'{
-		timer on 4
+		
 		*disp "`i':`j'"
 			if `i' == `j'{
 	
@@ -567,11 +568,12 @@ program define reg_sandwich, eclass sortpreserve
 				
 			}
 			matrix drop `PThetaP'
-		timer off 4	
+		
 		} 
 		
 		
 	}
+	timer off 4	
 	disp "timer 4 off"
 	forvalues coefficient = 1/`p' {
 		matrix `_dfs'[1,`coefficient'] = 2/`_dfs'[1,`coefficient']
