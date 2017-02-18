@@ -20,7 +20,7 @@
 
 capture program drop reg_sandwich
 program define reg_sandwich, eclass sortpreserve
-
+	
 	version 14.2 
 	syntax varlist(min=1 numeric fv) [if] [in] ///
 	[aweight pweight],  ///
@@ -30,6 +30,7 @@ program define reg_sandwich, eclass sortpreserve
 	[Level(cilevel)]
 	
 	timer clear 
+	timer on 5
 	
 	*mark sample
     marksample touse
@@ -736,6 +737,7 @@ program define reg_sandwich, eclass sortpreserve
 		ereturn local constant_used = 0
 	}
 	
+	timer off 5
 	disp "timers:"
 	timer list
 end
