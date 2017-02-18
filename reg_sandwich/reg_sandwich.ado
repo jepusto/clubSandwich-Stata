@@ -269,9 +269,12 @@ program define reg_sandwich, eclass sortpreserve
 	
 	matrix `XWAeeAWX' = J(`p', `p', 0)
 		
-	local current_jcountFtest = 0
-	local endj = 0
-	
+	*local current_jcountFtest = 0
+	local first_cluster = 1
+	*local endj = 0
+	tempname Pj_relevant  Pj_Theta_Pj_relevant
+	tempname evecs evals sq_inv_Bj
+	tempname PPj
 	disp "timer 3 start: Ajs and save per cluster"
 	
     foreach j in `idlist' {
@@ -322,7 +325,7 @@ program define reg_sandwich, eclass sortpreserve
 		}
 		
 		* Symmetric square root of the Moore-Penrose inverse of Bj
-		tempname evecs evals sq_inv_Bj
+		
 		mat symeigen `evecs' `evals' = `Bj'
 		mata: st_matrix( "`sq_inv_Bj'", st_matrix( "`evecs'")*diag(editmissing(st_matrix( "`evals'"):^(-1/2),0))*st_matrix( "`evecs'")')
 											
@@ -396,60 +399,61 @@ program define reg_sandwich, eclass sortpreserve
 		* 
 		* and additionally save M*Xi'*Wi*Ai as PPi
 		
-		local current_jcountFtest = `current_jcountFtest'+1
-        tempname P`current_jcountFtest'_relevant  P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant
+		*local current_jcountFtest = `current_jcountFtest'+1
+        
 		
 		
 		if "`type_VCR'" == "OLS" {
 		
-			matrix `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant' = ///
+			matrix `Pj_Theta_Pj_relevant' = ///
 													`M'*`Xj''*`Aj'* ///
 													(`Bj')* ///
 													`Aj''*`Xj'*`M'' // p x p
 														
-			matrix `P`current_jcountFtest'_relevant' =  `M'*`Xj''*`Aj'*`Xj' // p x p
+			matrix `Pj_relevant' =  `M'*`Xj''*`Aj'*`Xj' // p x p
 		
 													
 
 		}
 		else if "`type_VCR'" == "WLSp" {
 		
-			matrix `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant' = ///
+			matrix `Pj_Theta_Pj_relevant' = ///
 													`M'*`Xj''*`Wj'*`Aj'* ///
 													(`Bj')* ///
 													`Aj''*`Wj'*`Xj'*`M'' // p x p
 													
-			matrix `P`current_jcountFtest'_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
+			matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
 			
-			tempname PP`current_jcountFtest'
 			
-			matrix `PP`current_jcountFtest'' = `Wj'*`Xj'*`M' // kj x p
+			
+			matrix `PPj' = `Wj'*`Xj'*`M' // kj x p
 		}
 		else if "`type_VCR'" == "WLSa" {
-			matrix `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant' = ///
+			matrix `Pj_Theta_Pj_relevant' = ///
 													`M'*`Xj''*`Wj'*`Aj'* ///
 													(`Tj'-`Xj'*`M'*`Xj'')* ///
 													`Aj''*`Wj'*`Xj'*`M'' //p x p
 													
-			matrix `P`current_jcountFtest'_relevant' =  `M'*`Xj''*`Wj'*`Aj'*`Xj' // p x p
+			matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj'*`Xj' // p x p
 		}
 	
 	
 		
 		* save for later
-		if `current_jcountFtest'==1 {
-			matrix `Big_PThetaP_relevant' = `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant'
-			matrix `Big_P_relevant' = `P`current_jcountFtest'_relevant''
+		if `first_cluster'==1 {
+			matrix `Big_PThetaP_relevant' = `Pj_Theta_Pj_relevant'
+			matrix `Big_P_relevant' = `Pj_relevant''
 			if "`type_VCR'" == "WLSp" {
-				matrix `Big_PP' = `PP`current_jcountFtest''
+				matrix `Big_PP' = `PPj'
 			}
+			local first_cluster = 0
 		}
 		else {	
-			matrix `Big_PThetaP_relevant' = [`Big_PThetaP_relevant' \ `P`current_jcountFtest'_Theta_P`current_jcountFtest'_relevant']
-			matrix `Big_P_relevant' = [`Big_P_relevant' \ `P`current_jcountFtest'_relevant'']
+			matrix `Big_PThetaP_relevant' = [`Big_PThetaP_relevant' \ `Pj_Theta_Pj_relevant']
+			matrix `Big_P_relevant' = [`Big_P_relevant' \ `Pj_relevant'']
 			
 			if "`type_VCR'" == "WLSp" {
-				matrix `Big_PP' = [`Big_PP' \ `PP`current_jcountFtest'']
+				matrix `Big_PP' = [`Big_PP' \ `PPj']
 			
 			}
 		}
