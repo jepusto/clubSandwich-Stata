@@ -14,14 +14,21 @@ capture mata: mata drop reg_sandwich_ttests()
 mata:
 
 real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p, matrix Big_PThetaP_relevant, matrix Big_P_relevant, matrix M, matrix MXWTWXM){
-
+	
+	endi = 0
 	for (i=1; i<=m; i++) {
 		// We use the symmetry here, since that temp(i,j) =temp(j,i)
-		for (j=i; j<=m; j++) {
+		starti = endi+1
+		endi  =  starti + p - 1
 		
+		// initialize startj and endj as same position as i
+		startj = starti
+		endj = endi
+		for (j=i; j<=m; j++) {
+			
 			if (i == j) {
 	
-				PThetaP = `P`i'_Theta_P`i'_relevant'
+				PThetaP = Big_PThetaP_relevant[(starti .. endi) , (1 .. p)]
 	
 			}
 			else {
@@ -52,18 +59,18 @@ real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p,
 				*/
 				
 				if (type_VCR == "OLS") {
-					PThetaP = `P`i'_relevant'*M*`P`j'_relevant''														
+					PThetaP = Big_P_relevant[(starti .. endi),(1 .. p)]*M*Big_P_relevant[(startj .. endj),(1 .. p)]'														
 				}
 				else if (type_VCR == "WLSp") {
 				
-					PThetaP = `P`i'_relevant'* ///
+					PThetaP = Big_P_relevant* ///
 										(-`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j''')* ///
-										`P`j'_relevant''
+										Big_P_relevant'
 					
 					
 				}
 				else if (type_VCR == "WLSa") {
-					PThetaP = `P`i'_relevant'*M*`P`j'_relevant''
+					PThetaP = Big_P_relevant[(starti .. endi),(1 .. p)]*M*Big_P_relevant[(startj .. endj),(1 .. p)]'
 				}
 			}
 		
@@ -94,6 +101,10 @@ real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p,
 				
 			}
 		
+			// Update startj and endj
+			startj = endj+1
+			endj  =  startj + p - 1
+
 		} 
 		
 		
