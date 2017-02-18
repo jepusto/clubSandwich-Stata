@@ -13,7 +13,7 @@
 capture mata: mata drop reg_sandwich_ttests()
 mata:
 
-real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p, matrix Big_PThetaP_relevant, matrix Big_P_relevant, matrix M, matrix MXWTWXM){
+real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scalar p, matrix Big_PThetaP_relevant, matrix Big_P_relevant, matrix M, matrix MXWTWXM){
 	
 	endi = 0
 	for (i=1; i<=m; i++) {
