@@ -1,6 +1,6 @@
 // github repository: https://github.com/jepusto/clubSandwich-Stata
 //
-*! version 0.0 updated 30-Jan-2017
+*! version 0.0 updated 18-Feb-2017
 // Updated by Marcelo Tyszler (tyszler.jobs@gmail.com):
 //
 // Wrapper function for reg_sandwich:
@@ -488,6 +488,7 @@ program define reg_sandwich, eclass sortpreserve
 	matrix `_dfs' =  J(1,`p', 0) 
 	disp "timer 4 start: T-tests i:j"
 	timer on 4
+	/*
 	forvalues i = 1/`m'{
 		* We use the symmetry here, since that temp(i,j) =temp(j,i)
 		forvalues j = `i'/`m'{
@@ -573,6 +574,7 @@ program define reg_sandwich, eclass sortpreserve
 		
 		
 	}
+	*/
 	timer off 4	
 	disp "timer 4 off"
 	forvalues coefficient = 1/`p' {
