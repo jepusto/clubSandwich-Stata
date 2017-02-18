@@ -15,6 +15,7 @@ mata:
 
 real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scalar p, matrix Big_PThetaP_relevant, matrix Big_P_relevant, matrix M, matrix MXWTWXM){
 	
+	_dfs =  J(1,p, 0) 
 	endi = 0
 	for (i=1; i<=m; i++) {
 		// We use the symmetry here, since that temp(i,j) =temp(j,i)
@@ -109,6 +110,8 @@ real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scal
 		
 		
 	}
+	
+	return(_dfs)
 }
 
 /* Save and clear */
