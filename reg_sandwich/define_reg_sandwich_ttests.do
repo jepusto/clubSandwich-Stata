@@ -16,17 +16,16 @@ mata:
 real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p, matrix Big_PThetaP_relevant, matrix Big_P_relevant, matrix M, matrix MXWTWXM){
 
 	forvalues i = 1/`m'{
-		* We use the symmetry here, since that temp(i,j) =temp(j,i)
+		// We use the symmetry here, since that temp(i,j) =temp(j,i)
 		forvalues j = `i'/`m'{
 		
-		*disp "`i':`j'"
 			if `i' == `j'{
 	
 				matrix  `PThetaP' = `P`i'_Theta_P`i'_relevant'
 	
 			}
 			else {
-				* i ~= j 
+				/* i ~= j 
 				* M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M
 				* and we call M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M:
 				* Pi_Theta_Pi_relevant
@@ -50,6 +49,7 @@ real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p,
 				* For WLSp we call  M*Xi'*Wi*Ai
 				* Pi_relevant,
 				* and M*Xi'*Wi*Ai as PPi
+				*/
 				
 				if "`type_VCR'" == "OLS" {
 					matrix  `PThetaP' = `P`i'_relevant'*`M'*`P`j'_relevant''														
@@ -69,11 +69,10 @@ real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p,
 		
 			forvalues coefficient = 1/`p' {
 				
-				* prep C
-					
-				* * Define C
+				// prep C
 				matrix `C_ttest' = J(1, `p', 0) // C is initialized as a 1 x p matrix of zeros
 				
+				// Define C				
 				matrix `C_ttest'[1,`coefficient'] = 1
 				
 				
@@ -84,7 +83,7 @@ real vector reg_sandwich_t(string scalar type_VCR, real scalar m, real scalar p,
 				matrix `temp_calc' = `matrix_ttest'*`PThetaP'*`matrix_ttest''
 				local  temp_calc2 = 2*((`temp_calc'[1,1])^2)
 				
-				* We use the symmetry here, since that temp(i,j) =temp(j,i)
+				// We use the symmetry here, since that temp(i,j) =temp(j,i)
 				if `i'==`j'{
 					matrix `_dfs'[1,`coefficient'] = `_dfs'[1,`coefficient'] + `temp_calc2'
 					
