@@ -489,7 +489,6 @@ program define reg_sandwich, eclass sortpreserve
 	disp "timer 4 start: T-tests i:j"
 	timer on 4
 	mata: st_matrix("`_dfs'", reg_sandwich_ttests("`type_VCR'", `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"), st_matrix("`M'"),  st_matrix("`MXWTWXM'")))
-	matrix list `_dfs'
 	/*
 	forvalues i = 1/`m'{
 		* We use the symmetry here, since that temp(i,j) =temp(j,i)
@@ -582,7 +581,6 @@ program define reg_sandwich, eclass sortpreserve
 	forvalues coefficient = 1/`p' {
 		matrix `_dfs'[1,`coefficient'] = 2/`_dfs'[1,`coefficient']
 	}
-	
 	
      
     display _newline
