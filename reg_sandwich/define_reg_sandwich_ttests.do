@@ -29,7 +29,7 @@ real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scal
 			
 			if (i == j) {
 	
-				PThetaP = Big_PThetaP_relevant[(starti .. endi) , (1 .. p)]'
+				PThetaP = Big_PThetaP_relevant[(starti .. endi) , (1 .. p)]
 	
 			}
 			else {
