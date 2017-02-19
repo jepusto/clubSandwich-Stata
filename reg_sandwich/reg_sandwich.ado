@@ -157,6 +157,7 @@ program define reg_sandwich, eclass sortpreserve
 		
 	matrix p = rowsof(e(V))
 	local p = p[1,1]
+	drop matrix p
 	
 	if "`main_function'" == "areg" {
 		*ignore constant
