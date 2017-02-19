@@ -95,7 +95,7 @@ test_sandwich beertaxa beerpercap winepercap
 
 test_sandwich legal beertaxa beerpercap winepercap
 
-
+**/
 ** with absorption: 
 disp "WARNING: areg has no 'noconstant' option, therefore the values for the dummies are in a different level"
 
@@ -104,8 +104,9 @@ disp "WARNING: areg has no 'noconstant' option, therefore the values for the dum
 *xi: areg `specification', absorb(state) cluster(state)
 
 * compare results with explicit dummies
-xi: reg_sandwich `specification' i.state,  cluster(state)
+*xi: reg_sandwich `specification' i.state,  cluster(state)
 xi: reg_sandwich `specification', absorb(state) cluster(state)
+/**
 test_sandwich legal beertaxa
 test_sandwich legal beerpercap
 test_sandwich legal winepercap
@@ -121,6 +122,7 @@ test_sandwich legal beerpercap winepercap
 test_sandwich beertaxa beerpercap winepercap
 
 test_sandwich legal beertaxa beerpercap winepercap
+**/
 
 * a-weighted
 * wls_within <- lm(update(specification, . ~ . + factor(state)), weights = pop, data = MV_Mortality)
@@ -128,8 +130,9 @@ test_sandwich legal beertaxa beerpercap winepercap
 *xi, noomit: areg `specification' [aweight=pop], absorb(state) cluster(state)
 
 * compare results with explicit dummies
-xi, noomit: reg_sandwich `specification' i.state [aweight=pop], cluster(state)
+*xi, noomit: reg_sandwich `specification' i.state [aweight=pop], cluster(state)
 xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
+/**
 test_sandwich legal beertaxa
 test_sandwich legal beerpercap
 test_sandwich legal winepercap
@@ -145,14 +148,15 @@ test_sandwich legal beerpercap winepercap
 test_sandwich beertaxa beerpercap winepercap
 
 test_sandwich legal beertaxa beerpercap winepercap
-
+**/
 * p-weighted
 * coef_test(wls_within, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE, ignore_FE = TRUE)
 *xi, noomit: areg `specification' [pweight=pop], absorb(state) cluster(state)
 
 * compare results with explicit dummies
-xi, noomit: reg_sandwich `specification' i.state [pweight=pop], cluster(state)
+*xi, noomit: reg_sandwich `specification' i.state [pweight=pop], cluster(state)
 xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
+/**
 test_sandwich legal beertaxa
 test_sandwich legal beerpercap
 test_sandwich legal winepercap
