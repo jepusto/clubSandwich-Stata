@@ -270,7 +270,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	matrix `XWAeeAWX' = J(`p', `p', 0)
 		
-	*local current_jcountFtest = 0
+	local current_jcountFtest = 0
 	local first_cluster = 1
 	*local endj = 0
 	tempname Pj_relevant  Pj_Theta_Pj_relevant
@@ -400,7 +400,7 @@ program define reg_sandwich, eclass sortpreserve
 		* 
 		* and additionally save M*Xi'*Wi*Ai as PPi
 		
-		*local current_jcountFtest = `current_jcountFtest'+1
+		local current_jcountFtest = `current_jcountFtest'+1
         
 		
 		
@@ -424,10 +424,11 @@ program define reg_sandwich, eclass sortpreserve
 													`Aj''*`Wj'*`Xj'*`M'' // p x p
 													
 			matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
-			
+			matrix P`current_jcountFtest'_relevant = `Pj_relevant'
 			
 			
 			matrix `PPj' = `Wj'*`Xj'*`M' // kj x p
+			matrix PP`current_jcountFtest' = `PPj'
 		}
 		else if "`type_VCR'" == "WLSa" {
 			matrix `Pj_Theta_Pj_relevant' = ///
@@ -474,18 +475,18 @@ program define reg_sandwich, eclass sortpreserve
 	
 	
 	* T-test, using as a special case of an F-test:
-		if "`type_VCR'" == "WLSp" {
+	if "`type_VCR'" == "WLSp" {
 		
 			qui: tab `clusternumber' if `touse', matrow(`cluster_list')
 			forvalues i = 1/`m'{
 		
-				tempname X`i'
+				*tempname X`i'
 				
 				if "`constant'"=="" & "`main_function'" != "areg" {
-					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')
+					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')
 				} 
 				else {
-					mkmat `x'  if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')
+					mkmat `x'  if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')
 				}
 			}
 	}
@@ -494,6 +495,18 @@ program define reg_sandwich, eclass sortpreserve
 	disp "timer 4 start: T-tests i:j"
 	timer on 4
 	mata: st_matrix("`_dfs'", reg_sandwich_ttests("`type_VCR'", `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"), st_matrix("`M'"),  st_matrix("`MXWTWXM'")))
+	if "`type_VCR'" == "WLSp" {
+	
+			forvalues i = 1/`m'{
+		
+				matrix drop X`i'
+				matrix drop PP`i'
+				matrix drop P`i'_relevant
+				
+			}
+	}
+
+	
 	/*
 	forvalues i = 1/`m'{
 		* We use the symmetry here, since that temp(i,j) =temp(j,i)

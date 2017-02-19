@@ -63,11 +63,10 @@ real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scal
 					PThetaP = Big_P_relevant[(starti .. endi),(1 .. p)]'*M*Big_P_relevant[(startj .. endj),(1 .. p)]														
 				}
 				else if (type_VCR == "WLSp") {
-					/*
-					PThetaP = Big_P_relevant* ///
-										(-`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j''')* ///
-										Big_P_relevant'
-					*/
+				 	PThetaP = st_matrix("P" + strofreal(i) + "_relevant")* ///
+										(-st_matrix("PP" + strofreal(i) )*st_matrix("X" + strofreal(j))'-st_matrix("X" + strofreal(i))*st_matrix("PP" + strofreal(j))' + st_matrix("X" + strofreal(i))*MXWTWXM*st_matrix("X" + strofreal(j))')* ///
+										st_matrix("P" + strofreal(j) + "_relevant")'
+					
 					
 				}
 				else if (type_VCR == "WLSa") {
