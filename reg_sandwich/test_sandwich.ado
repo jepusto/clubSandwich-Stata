@@ -260,7 +260,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	matsqrt `Omega_Ftest'
 	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')
 
-	mata: st_local("Sum_temp_calc2", reg_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"),  st_matrix("`MXWTWXM'"),  st_matrix("`matrix_Ftest'"),  st_matrix("`C_Ftest'")))
+	mata: st_local("Sum_temp_calc2", test_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"),  st_matrix("`MXWTWXM'"),  st_matrix("`matrix_Ftest'"),  st_matrix("`C_Ftest'")))
 	
 	/*
 	local Sum_temp_calc2 = 0
