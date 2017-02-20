@@ -346,6 +346,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	
 			matrix drop PP`i' 
 			matrix drop P`i'_relevant 
+			matrix drop X`i' 
 		}
 	}
 			
