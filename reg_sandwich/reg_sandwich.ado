@@ -316,18 +316,21 @@ program define reg_sandwich, eclass sortpreserve
 		* Dj*[Tj-Xj*M*Xj]*Dj
 				
 		if "`type_VCR'" == "OLS" {
-			matrix `Bj'=`Tj'-`Xj'*`M'*`Xj''
+			*matrix `Bj'=`Tj'-`Xj'*`M'*`Xj''
+			mata: st_matrix("`Bj'",st_matrix("`Tj'")-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")')
 		}
 		else if "`type_VCR'" == "WLSp" {
 			mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
 			matrix `Wj' = diag(`Wj')  
-			matrix `Bj'=`Tj'-`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'+ `Xj'*`MXWTWXM'*`Xj''
+			*matrix `Bj'=`Tj'-`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'+ `Xj'*`MXWTWXM'*`Xj''
+			mata: st_matrix("`Bj'", st_matrix("`Tj'")-st_matrix("`Wj'")*st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")'-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Wj'")+ st_matrix("`Xj'")*st_matrix("`MXWTWXM'")*st_matrix("`Xj'")')
 		}
 		else if "`type_VCR'" == "WLSa" {
 			mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
 			matrix `Wj' = diag(`Wj')
 			matrix `Dj' = cholesky(`Tj')
-			matrix `Bj' = `Dj''*(`Tj'-`Xj'*`M'*`Xj'')*`Dj'
+			*matrix `Bj' = `Dj''*(`Tj'-`Xj'*`M'*`Xj'')*`Dj'
+			mata: st_matrix("`Bj'", st_matrix("`Dj'")'*(st_matrix("`Tj'")-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")')*st_matrix("`Dj'"))
 		}
 		
 		* Symmetric square root of the Moore-Penrose inverse of Bj
@@ -336,7 +339,8 @@ program define reg_sandwich, eclass sortpreserve
 		mata: st_matrix( "`sq_inv_Bj'", st_matrix( "`evecs'")*diag(editmissing(st_matrix( "`evals'"):^(-1/2),0))*st_matrix( "`evecs'")')
 											
 		if "`type_VCR'" == "WLSa" {
-			matrix `Aj' = `Dj'*(`sq_inv_Bj')*`Dj''
+			*matrix `Aj' = `Dj'*(`sq_inv_Bj')*`Dj''
+			mata: st_matrix("`Aj'" , st_matrix("`Dj'")*(st_matrix("`sq_inv_Bj'"))*st_matrix("`Dj'")')
 		}
 		else {
 			matrix `Aj' = (`sq_inv_Bj')
@@ -346,11 +350,13 @@ program define reg_sandwich, eclass sortpreserve
         mkmat `prime_resid' if `touse' & `clusternumber' == `j', matrix(`ej')
 		
 		if "`type_VCR'" == "OLS" {
-			matrix `XWAeeAWX' = (`Xj'' * `Aj' * `ej' * `ej'' * `Aj' * `Xj') + `XWAeeAWX'
+			*matrix `XWAeeAWX' = (`Xj'' * `Aj' * `ej' * `ej'' * `Aj' * `Xj') + `XWAeeAWX'
+			mata: st_matrix("`XWAeeAWX'",   (st_matrix("`Xj'")'* st_matrix("`Aj'") * st_matrix("`ej'") * st_matrix("`ej'")' * st_matrix("`Aj'") * st_matrix("`Xj'")) + st_matrix("`XWAeeAWX'"))
 		}
 		else {
 		
-			matrix `XWAeeAWX' = (`Xj'' * `Wj' * `Aj' * `ej' * `ej'' * `Aj' * `Wj' * `Xj') + `XWAeeAWX'
+			*matrix `XWAeeAWX' = (`Xj'' * `Wj' * `Aj' * `ej' * `ej'' * `Aj' * `Wj' * `Xj') + `XWAeeAWX'
+			mata: st_matrix("`XWAeeAWX'",   (st_matrix("`Xj'")'* st_matrix("`Wj'")* st_matrix("`Aj'") * st_matrix("`ej'") * st_matrix("`ej'")' * st_matrix("`Aj'") * st_matrix("`Wj'")* st_matrix("`Xj'")) + st_matrix("`XWAeeAWX'"))
 		}
 
 		
@@ -410,38 +416,52 @@ program define reg_sandwich, eclass sortpreserve
 		
 		
 		if "`type_VCR'" == "OLS" {
-		
+			/*
 			matrix `Pj_Theta_Pj_relevant' = ///
 													`M'*`Xj''*`Aj'* ///
 													(`Bj')* ///
 													`Aj''*`Xj'*`M'' // p x p
+			*/
+			mata: st_matrix("`Pj_Theta_Pj_relevant'", st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Aj'")* (st_matrix("`Bj'"))* st_matrix("`Aj'")'*st_matrix("`Xj'")*st_matrix("`M'")') 
+			// p x p
 														
-			matrix `Pj_relevant' =  `M'*`Xj''*`Aj'*`Xj' // p x p
+			*matrix `Pj_relevant' =  `M'*`Xj''*`Aj'*`Xj' // p x p
+			mata: st_matrix("`Pj_relevant'",  st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Aj'")*st_matrix("`Xj'") )
 		
 													
 
 		}
-		else if "`type_VCR'" == "WLSp" {
-		
+		else if "`type_VCR'" == "WLSp" {	
+			/*
 			matrix `Pj_Theta_Pj_relevant' = ///
 													`M'*`Xj''*`Wj'*`Aj'* ///
 													(`Bj')* ///
 													`Aj''*`Wj'*`Xj'*`M'' // p x p
+			*/
+			mata: st_matrix("`Pj_Theta_Pj_relevant'", st_matrix("`M'")*st_matrix("`Xj'")'* st_matrix("`Wj'")* st_matrix("`Aj'")* (st_matrix("`Bj'"))* st_matrix("`Aj'")'* st_matrix("`Wj'")* st_matrix("`Xj'")*st_matrix("`M'")') 
+			
 													
-			matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
+			*matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
+			mata: st_matrix("`Pj_relevant'",  st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Wj'")*st_matrix("`Aj'") )
 			matrix P`current_jcountFtest'_relevant = `Pj_relevant'
 			
 			
-			matrix `PPj' = `Wj'*`Xj'*`M' // kj x p
+			*matrix `PPj' = `Wj'*`Xj'*`M' // kj x p
+			mata: st_matrix("`PPj'", st_matrix("`Wj'")*st_matrix("`Xj'")*st_matrix("`M'"))
 			matrix PP`current_jcountFtest' = `PPj'
 		}
 		else if "`type_VCR'" == "WLSa" {
+			/*
 			matrix `Pj_Theta_Pj_relevant' = ///
 													`M'*`Xj''*`Wj'*`Aj'* ///
 													(`Tj'-`Xj'*`M'*`Xj'')* ///
 													`Aj''*`Wj'*`Xj'*`M'' //p x p
+			*/
+			mata: st_matrix("`Pj_Theta_Pj_relevant'", st_matrix("`M'")*st_matrix("`Xj'")'* st_matrix("`Wj'")* st_matrix("`Aj'")* (st_matrix("`Tj'")-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")')* st_matrix("`Aj'")'* st_matrix("`Wj'")* st_matrix("`Xj'")*st_matrix("`M'")') 
+			
 													
-			matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj'*`Xj' // p x p
+			*matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj'*`Xj' // p x p
+			mata: st_matrix("`Pj_relevant'",  st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Wj'")*st_matrix("`Aj'")*st_matrix("`Xj'") )
 		}
 	
 	
