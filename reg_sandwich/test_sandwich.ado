@@ -26,7 +26,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
     syntax [varlist(default=none)], [cons]
 	
 	tempname  C_Ftest ///
-			  gs gt temp_calc2 temp_calc Sum_temp_calc2 ///
+			  gs gt temp_calc2 temp_calc  ///
 			 Omega_Ftest matrix_Ftest middle_Omega ///
 			 Big_P_relevant Big_PThetaP_relevant Pi_Theta_Pi Pi_relevant Pj_relevant Big_PP middle_PThetaP ///
 			 Fconstant ///
@@ -224,26 +224,27 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			if "`e(absorb)'"~=""{
 				qui: sum  `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1]
 				local endi  =  `starti' + r(N) -1
-				matrix `X`i'' = `Ur'[`starti'..`endi',1..`p']
+				matrix X`i' = `Ur'[`starti'..`endi',1..`p']
 			}
 			else {
 				if "`constant_used'" == "1" {
-					mkmat `x' `Fconstant' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')		
+					mkmat `x' `Fconstant' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')		
 				}
 				else {
-					mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(`X`i'')	
+					mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')	
 				}
-				local endi  =  `starti' + rowsof(`X`i'')-1
+				local endi  =  `starti' + rowsof(X`i')-1
 			}
 			
 			
 			
-			matrix `PP`i'' = `Big_PP'[`starti'..`endi',1..`p']
-			matrix `P`i'_relevant' = `Big_P_relevant'[`starti'..`endi',1..`p']'
+			matrix PP`i' = `Big_PP'[`starti'..`endi',1..`p']
+			matrix P`i'_relevant = `Big_P_relevant'[`starti'..`endi',1..`p']'
 		}
 		
 	} 
-	else {
+
+	/*else {
 		forvalues i = 1/`m'{
 			local starti = (`i'-1)*`p'+1
 			local endi = `starti'+`p'-1
@@ -252,13 +253,16 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			
 			matrix `P`i'_relevant' = `Big_P_relevant'[`starti'..`endi',1..`p']'
 		}
-	}
+	}*/
 	
 	matrix `MXWTWXM' = e(MXWTWXM)
 	matrix `Omega_Ftest' = `C_Ftest'*`MXWTWXM'*`C_Ftest''
 	matsqrt `Omega_Ftest'
 	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')
+
+	mata: st_local("Sum_temp_calc2", reg_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"),  st_matrix("`MXWTWXM'"),  st_matrix("`matrix_Ftest'"),  st_matrix("`C_Ftest'")))
 	
+	/*
 	local Sum_temp_calc2 = 0
 	
 	forvalues s = 1/`q_Ftest'{
@@ -335,14 +339,21 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			
 		}
 	}
-			
+	*/
 		
+	if "`type_VCR'" == "WLSp" {
+		forvalues i = 1/`m'{
+	
+			matrix drop PP`i' 
+			matrix drop P`i'_relevant 
+		}
+	}
 			
 	* eta needs to be computed according to equation (14):
 	* eta = q*(q+1) / [sum(s=1 to q) sum(t=1 to q) Var(d_st)]
 	
 	local eta_Ftest = (`q_Ftest'*(`q_Ftest'+1))/`Sum_temp_calc2'
-	
+		
 	* z = Omega^(-1/2)(Cb-c)
 	* D = Omega^(-1/2)*C*VR*C'*Omega^(-1/2)
 	* Q = z'inv(D)z (equation 6)
@@ -353,7 +364,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	matrix `z_Ftest' = invsym(sq_`Omega_Ftest')*(`C_Ftest'*`b'')
 	matrix `D_Ftest' = invsym(sq_`Omega_Ftest')*`C_Ftest'*`V'*`C_Ftest''*invsym(sq_`Omega_Ftest')
 	matrix `Q_Ftest' = `z_Ftest''*invsym(`D_Ftest')*`z_Ftest'
-
+	
 	* Now we can compute the F-statistic:
 	* (eta - q + 1)/(eta*q) * Q  follows F(q, eta - q + 1) distribution
 	local F_stat = ((`eta_Ftest' - `q_Ftest' + 1)/(`eta_Ftest'*`q_Ftest'))* `Q_Ftest'[1,1]
