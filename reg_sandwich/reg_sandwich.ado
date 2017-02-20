@@ -157,7 +157,7 @@ program define reg_sandwich, eclass sortpreserve
 		
 	matrix p = rowsof(e(V))
 	local p = p[1,1]
-	drop matrix p
+	matrix drop p
 	
 	if "`main_function'" == "areg" {
 		*ignore constant
@@ -244,7 +244,8 @@ program define reg_sandwich, eclass sortpreserve
 	
 	
 	if "`type_VCR'" == "WLSp" {	
-		matrix `MXWTWXM' =  `M'*`X''*`W'*`W'*`X'*`M'
+		*matrix `MXWTWXM' =  `M'*`X''*`W'*`W'*`X'*`M'
+		mata: st_matrix("`MXWTWXM'", st_matrix("`M'")*st_matrix("`X'")'*st_matrix("`W'")*st_matrix("`W'")*st_matrix("`X'")*st_matrix("`M'"))
 	}
 	else if "`type_VCR'" == "WLSa" {
 		
