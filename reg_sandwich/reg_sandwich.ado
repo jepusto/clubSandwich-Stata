@@ -230,7 +230,8 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	if "`type_VCR'" =="OLS"{
-		matrix `M' = invsym(`X'' * `X')
+		*matrix `M' = invsym(`X'' * `X')
+		mata: st_matrix("`M'",invsym(st_matrix("`X'")' * st_matrix("`X'")))
 		matrix `MXWTWXM' =  `M'
 	} 
 	else {
@@ -238,7 +239,9 @@ program define reg_sandwich, eclass sortpreserve
 		mkmat `wfinal' if `touse', matrix(`W')
 		matrix `W' = diag(`W')
 	
-		matrix `M' = invsym(`X'' * `W' * `X')
+		*matrix `M' = invsym(`X'' * `W' * `X')
+		mata: st_matrix("`M'",invsym(st_matrix("`X'")' * st_matrix("`W'") *st_matrix("`X'")))
+		
 	}
 				
 	
