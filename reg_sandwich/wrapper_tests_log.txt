@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\wrapper_tests_log.txt
   log type:  text
- opened on:  16 Feb 2017, 08:11:50
+ opened on:  20 Feb 2017, 16:04:38
 
 . ***********************************************
 . display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
@@ -15,7 +15,7 @@ The goal of theses tests is to check if the coefficients, se and dfs are being p
 To match aweights with R, R pop needs to be divided by 100
 
 . display "DateTime: $S_DATE $S_TIME"
-DateTime: 16 Feb 2017 08:11:50
+DateTime: 20 Feb 2017 16:04:38
 
 . 
 . use "MortalityRates", replace
@@ -43,6 +43,14 @@ cause:
 . *coef_test(ols_pooled, vcov = "CR2", cluster = MV_Mortality$state)
 . * xi, noomit: reg `specification', nocons cluster(state)
 . xi, noomit: reg_sandwich `specification', nocons cluster(state)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using OLS
@@ -86,6 +94,12 @@ Robust standard error estimation using OLS
  _Iyear_1995 |      0.203   12.71      32.48     0.9874    -25.6718  26.0776
  _Iyear_1996 |      0.357   13.00      32.36     0.9782    -26.1167  26.8313
 ------------------------------------------------------------------------------
+timers:
+   1:      0.02 /        1 =       0.0200
+   2:      0.06 /        1 =       0.0600
+   3:      1.03 /       51 =       0.0201
+   4:      0.30 /        1 =       0.3000
+   5:      1.50 /        1 =       1.4950
 
 . ** Ftests:
 . test_sandwich legal beertaxa
@@ -178,6 +192,14 @@ Small Sample Corrected F-test:
 . * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = TRUE)
 . *xi, noomit: reg `specification' [aweight=pop], nocons cluster(state)
 . xi, noomit: reg_sandwich `specification' [aweight=pop], nocons cluster(state)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using WLS (aweights)
@@ -221,6 +243,12 @@ Robust standard error estimation using WLS (aweights)
  _Iyear_1995 |      10.576   9.44      23.20     0.2739    -8.9385   30.0899
  _Iyear_1996 |      10.964   9.76      23.35     0.2727    -9.2102   31.1387
 ------------------------------------------------------------------------------
+timers:
+   1:      0.02 /        1 =       0.0200
+   2:      0.99 /        1 =       0.9930
+   3:      1.08 /       51 =       0.0212
+   4:      0.29 /        1 =       0.2900
+   5:      2.48 /        1 =       2.4750
 
 . test_sandwich legal beertaxa
 
@@ -233,7 +261,7 @@ Small Sample Corrected F-test:
 
 
 Small Sample Corrected F-test:
-         F(2.0000,14.8020)   =    5.2027
+         F(2.0000,14.8019)   =    5.2027
          Prob > F            =    0.0194
 
 . test_sandwich legal winepercap
@@ -309,6 +337,14 @@ Small Sample Corrected F-test:
 . * coef_test(wls_pooled, vcov = "CR2", cluster = MV_Mortality$state, inverse_var = FALSE)
 . *xi, noomit: reg `specification' [pweight=pop], nocons cluster(state)
 . xi, noomit: reg_sandwich `specification' [pweight=pop], nocons cluster(state)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using WLS (pweights)
@@ -355,6 +391,12 @@ Robust standard error estimation using WLS (pweights)
 ! dof is less than 4, p-value untrustworthy
 see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
+timers:
+   1:      0.02 /        1 =       0.0200
+   2:      0.81 /        1 =       0.8070
+   3:      1.37 /       51 =       0.0268
+   4:      0.45 /        1 =       0.4530
+   5:      3.00 /        1 =       3.0050
 
 . test_sandwich legal beertaxa
 
@@ -452,6 +494,14 @@ WARNING: areg has no 'noconstant' option, therefore the values for the dummies a
 . xi: reg_sandwich `specification' i.state,  cluster(state)
 i.year            _Iyear_1970-1996    (naturally coded; _Iyear_1970 omitted)
 i.state           _Istate_1-56        (naturally coded; _Istate_1 omitted)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using OLS
@@ -549,9 +599,23 @@ Robust standard error estimation using OLS
 see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
 Warning:  variance matrix is nonsymmetric or highly singular
+timers:
+   1:      0.06 /        1 =       0.0600
+   2:      0.09 /        1 =       0.0900
+   3:      2.25 /       51 =       0.0441
+   4:      3.27 /        1 =       3.2650
+   5:      6.04 /        1 =       6.0410
 
 . xi: reg_sandwich `specification', absorb(state) cluster(state)
 i.year            _Iyear_1970-1996    (naturally coded; _Iyear_1970 omitted)
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using OLS, with absorb option
@@ -594,6 +658,12 @@ Robust standard error estimation using OLS, with absorb option
  _Iyear_1995 |      -33.356  4.03      47.38     0.0000    -41.4558  -25.2567
  _Iyear_1996 |      -33.870  4.07      47.01     0.0000    -42.0648  -25.6760
 ------------------------------------------------------------------------------
+timers:
+   1:      0.31 /        1 =       0.3120
+   2:      0.15 /        1 =       0.1500
+   3:      1.10 /       51 =       0.0216
+   4:      0.28 /        1 =       0.2790
+   5:      2.81 /        1 =       2.8080
 
 . test_sandwich legal beertaxa
 
@@ -651,7 +721,7 @@ Small Sample Corrected F-test:
 
 
 Small Sample Corrected F-test:
-         F(3.0000,19.2166)   =    0.0774
+         F(3.0000,19.2165)   =    0.0774
          Prob > F            =    0.9715
 
 . test_sandwich legal beerpercap winepercap
@@ -686,6 +756,14 @@ Small Sample Corrected F-test:
 . xi, noomit: reg_sandwich `specification' i.state [aweight=pop], cluster(state)
 note: _Iyear_1996 omitted because of collinearity
 note: _Istate_56 omitted because of collinearity
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using WLS (aweights)
@@ -783,9 +861,23 @@ Robust standard error estimation using WLS (aweights)
 see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
 Warning:  variance matrix is nonsymmetric or highly singular
+timers:
+   1:      0.05 /        1 =       0.0480
+   2:      1.38 /        1 =       1.3780
+   3:      3.08 /       51 =       0.0605
+   4:      3.85 /        1 =       3.8500
+   5:      8.70 /        1 =       8.6950
 
 . xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
 note: _Iyear_1996 omitted because of collinearity
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using WLS (aweights), with absorb option
@@ -828,6 +920,12 @@ Robust standard error estimation using WLS (aweights), with absorb option
  _Iyear_1994 |      0.981    1.54      22.64     0.5316    -2.2156   4.1775
  _Iyear_1995 |      0.102    1.46      22.88     0.9449    -2.9093   3.1125
 ------------------------------------------------------------------------------
+timers:
+   1:      0.07 /        1 =       0.0700
+   2:      1.17 /        1 =       1.1720
+   3:      1.17 /       51 =       0.0229
+   4:      0.29 /        1 =       0.2900
+   5:      3.46 /        1 =       3.4600
 
 . test_sandwich legal beertaxa
 
@@ -919,6 +1017,14 @@ Small Sample Corrected F-test:
 . xi, noomit: reg_sandwich `specification' i.state [pweight=pop], cluster(state)
 note: _Iyear_1996 omitted because of collinearity
 note: _Istate_56 omitted because of collinearity
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using WLS (pweights)
@@ -1016,9 +1122,23 @@ Robust standard error estimation using WLS (pweights)
 see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
 Warning:  variance matrix is nonsymmetric or highly singular
+timers:
+   1:      0.06 /        1 =       0.0600
+   2:      1.01 /        1 =       1.0070
+   3:      2.43 /       51 =       0.0476
+   4:      2.78 /        1 =       2.7840
+   5:      6.96 /        1 =       6.9610
 
 . xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
 note: _Iyear_1996 omitted because of collinearity
+timer 1 start: main regression
+timer 1 off
+timer 2 start: MXWTWXM
+timer 2 off
+timer 3 start: Ajs and save per cluster
+timer 3 off
+timer 4 start: T-tests i:j
+timer 4 off
 
 
 Robust standard error estimation using WLS (pweights), with absorb option
@@ -1064,6 +1184,12 @@ Robust standard error estimation using WLS (pweights), with absorb option
 ! dof is less than 4, p-value untrustworthy
 see Tipton, E. (in press) Small sample adjustments for robust variance
 estimation with meta-regression. Forthcoming in Psychological Methods.
+timers:
+   1:      0.07 /        1 =       0.0700
+   2:      0.82 /        1 =       0.8250
+   3:      1.08 /       51 =       0.0212
+   4:      0.45 /        1 =       0.4500
+   5:      3.74 /        1 =       3.7380
 
 . test_sandwich legal beertaxa
 
@@ -1152,5 +1278,5 @@ Small Sample Corrected F-test:
       name:  <unnamed>
        log:  C:\Users\marcelot\Dropbox\Freelancer\Stata F-Test\GitHub Tasks 1 and 2\clubSandwich-Stata\reg_sandwich\wrapper_tests_log.txt
   log type:  text
- closed on:  16 Feb 2017, 08:40:57
+ closed on:  20 Feb 2017, 16:06:04
 -------------------------------------------------------------------------------------------------------------------------------------------------
