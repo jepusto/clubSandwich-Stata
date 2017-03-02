@@ -1,4 +1,4 @@
-*! version 1.0 updated 08-Feb-2017
+*! version 0.0 updated 02-March-2017
 // Update by Marcelo Tyszler (tyszler.jobs@gmail.com):
 // 
 // Post-estimation function for reg_sandwich
@@ -198,14 +198,14 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			quietly : gen double `Fconstant' = 1 if e(sample)
 		}
 		
-		if "`e(absorb)'"~=""{
+		if "`e(absvar)'"~=""{
 			tempname Ur
 			matrix `Ur' = e(Ur)
 		}
 		
 		matrix `Big_PP' = e(PP)
 		
-		local cluster = e(cluster)
+		local cluster = e(clustvar)
 		quietly : gen double `clusternumber' = `cluster' if e(sample)
 		quietly sort `clusternumber' `_sortindex'
 		qui: tab `clusternumber' if e(sample), matrow(`cluster_list')

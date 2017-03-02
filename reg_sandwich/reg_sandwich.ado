@@ -1,6 +1,6 @@
 // github repository: https://github.com/jepusto/clubSandwich-Stata
 //
-*! version 0.0 updated 18-Feb-2017
+*! version 0.0 updated 02-March-2017
 // Updated by Marcelo Tyszler (tyszler.jobs@gmail.com):
 //
 // Wrapper function for reg_sandwich:
@@ -743,15 +743,23 @@ program define reg_sandwich, eclass sortpreserve
     /*********************/
 	ereturn post `b' `V', obs(`nobs') depname(`t') esample(`touse')
 	
-	ereturn local cmd "reg_sandwich"
 	ereturn local type_VCR "`type_VCR'"
+	ereturn local vce "cluster"
+	ereturn local vcetype "Cluster Robust Small Sample Corrected"
 	ereturn scalar N_clusters = `m'
 	ereturn matrix dfs = `_dfs'
 	
-	ereturn local cluster = "`cluster'"
+	ereturn local clustvar = "`cluster'"
+	
+	if "`type_VCR'" ~= "OLS" {
+		ereturn local wtype = "`weight'"
+		ereturn local wexp = "`exp'"
+	}
+	
+	
 	
 	if "`main_function'" == "areg" {
-			ereturn local absorb = "`absorb'"
+			ereturn local absvar = "`absorb'"
 	}
     
 	* Ftest	
@@ -775,6 +783,8 @@ program define reg_sandwich, eclass sortpreserve
 		ereturn local constant_used = 0
 	}
 	
+	ereturn local cmdline "reg_sandwich `0'"
+	ereturn local cmd "reg_sandwich"
 	*timer off 5
 	*disp "timers:"
 	*timer list
