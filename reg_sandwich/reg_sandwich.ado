@@ -627,7 +627,7 @@ program define reg_sandwich, eclass sortpreserve
 	
      
     display _newline
-    display as text "Robust standard error estimation using " as result "`main_call_display'`absorb_call_display'"
+    display as text "Robust Small Sample Corrected standard error estimation using " as result "`main_call_display'`absorb_call_display'"
 
 
 
@@ -745,7 +745,7 @@ program define reg_sandwich, eclass sortpreserve
 	
 	ereturn local type_VCR "`type_VCR'"
 	ereturn local vce "cluster"
-	ereturn local vcetype "Cluster Robust Small Sample Corrected"
+	ereturn local vcetype "Robust"
 	ereturn scalar N_clusters = `m'
 	ereturn matrix dfs = `_dfs'
 	
