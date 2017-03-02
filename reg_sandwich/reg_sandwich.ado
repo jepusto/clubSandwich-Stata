@@ -657,14 +657,21 @@ program define reg_sandwich, eclass sortpreserve
     /*********************/
     /*  Display results  */
     /*********************/
+	* save main regression results
+	local mss = `e(mss)'
+	local rss = `e(rss)'
 	local rmse = `e(rmse)'
+	local df_r = `e(df_r)'
+	
 	local r2 = `e(r2)'
+	local r2_a = `e(r2_a)'
 	
     display _col(55) as text "Number of obs" _col(69) "=" _col(69) as result %9.0f `nobs'
-    display _col(55) as text "F(27, 50)" _col(69) "=" _col(69) as result %9.0f `m'
-    display _col(55) as text "Prob > F" _col(69) "=" _col(69) as result %9.0f `min_n'
-    display _col(55) as text "R-squared" _col(69) "=" _col(69) as result %9.0f `r2'
-    display _col(55) as text "Root MSE" _col(69) "=" _col(69) as result %9.0f `rmse'
+    display _col(55) as text "F(27, 50)" _col(69) "=" _col(69) as result %9.4f `m'
+    display _col(55) as text "Prob > F" _col(69) "=" _col(69) as result %9.4f `min_n'
+    display _col(55) as text "R-squared" _col(69) "=" _col(69) as result %9.4f `r2'
+	display _col(55) as text "Adj R-squared" _col(69) "=" _col(69) as result %9.4f `r2_a'
+    display _col(55) as text "Root MSE" _col(69) "=" _col(69) as result %9.4f `rmse'
 	disp
     display _col(35) as text "(Std. Err. adjusted for `m' clusters in `cluster')"
 	
@@ -751,8 +758,15 @@ program define reg_sandwich, eclass sortpreserve
 	ereturn local vce "cluster"
 	ereturn local vcetype "Robust"
 	ereturn scalar N_clusters = `m'
+	
 	ereturn scalar r2 = `r2'
+	ereturn scalar r2 = `r2_a'
+	
+	ereturn scalar df_r = `df_r'
+	ereturn scalar rss = `rss'
+	ereturn scalar mss = `mss'
 	ereturn scalar rmse = `rmse'
+	
 	ereturn matrix dfs = `_dfs'
 	
 	ereturn local clustvar = "`cluster'"
