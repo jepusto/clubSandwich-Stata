@@ -527,7 +527,7 @@ program define reg_sandwich, eclass sortpreserve
 	*timer on 4
 	
 	
-	*F-Test
+	/*F-Test
 	tempname C_Ftest Omega_Ftest matrix_Ftest z_Ftest D_Ftest Q_Ftest
 	local q_Ftest = 0
 	foreach current_x in `x' {
@@ -554,6 +554,7 @@ program define reg_sandwich, eclass sortpreserve
 	local F_df2 = `eta_Ftest' - `q_Ftest' + 1
 	
 	local F_pvalue = Ftail(`F_df1',`F_df2',`F_stat')
+	*/
 	
 	* T-test, using as a special case of an F-test:
 	mata: st_matrix("`_dfs'", reg_sandwich_ttests("`type_VCR'", `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"), st_matrix("`M'"),  st_matrix("`MXWTWXM'")))
@@ -703,11 +704,11 @@ program define reg_sandwich, eclass sortpreserve
 	local r2 = `e(r2)'
 	local r2_a = `e(r2_a)'
 	
-	local F_df2_disp = round(`F_df2',0.01) 
+	*local F_df2_disp = round(`F_df2',0.01) 
 	
     display _col(55) as text "Number of obs" _col(69) "=" _col(69) as result %9.0f `nobs'
-    display _col(55) as text "F(`F_df1', `F_df2_disp')" _col(69) "=" _col(69) as result %9.4f `F_stat'
-    display _col(55) as text "Prob > F" _col(69) "=" _col(69) as result %9.4f `F_pvalue'
+    *display _col(55) as text "F(`F_df1', `F_df2_disp')" _col(69) "=" _col(69) as result %9.4f `F_stat'
+    *display _col(55) as text "Prob > F" _col(69) "=" _col(69) as result %9.4f `F_pvalue'
     display _col(55) as text "R-squared" _col(69) "=" _col(69) as result %9.4f `r2'
 	display _col(55) as text "Adj R-squared" _col(69) "=" _col(69) as result %9.4f `r2_a'
     display _col(55) as text "Root MSE" _col(69) "=" _col(69) as result %9.4f `rmse'
@@ -831,9 +832,9 @@ program define reg_sandwich, eclass sortpreserve
 	
 	* F-test:
 	* save some results
-	ereturn scalar F = `F_stat'
-	ereturn scalar df_m = `F_df1'
-	ereturn scalar df_r = `F_df2'
+	*ereturn scalar F = `F_stat'
+	*ereturn scalar df_m = `F_df1'
+	*ereturn scalar df_r = `F_df2'
 	
 	
 	ereturn matrix MXWTWXM = `MXWTWXM'			
