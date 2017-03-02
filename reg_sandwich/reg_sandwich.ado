@@ -657,23 +657,31 @@ program define reg_sandwich, eclass sortpreserve
     /*********************/
     /*  Display results  */
     /*********************/
-
-    display _col(55) as text "N Level 1" _col(69) "=" _col(69) as result %9.0f `nobs'
-    display _col(55) as text "N Level 2" _col(69) "=" _col(69) as result %9.0f `m'
-    display _col(55) as text "Min Level 1 n" _col(69) "=" _col(69) as result %9.0f `min_n'
-    display _col(55) as text "Max Level 1 n" _col(69) "=" _col(69) as result %9.0f `max_n'
-    display _col(55) as text _col (5) "Average" _col(69) "=" _col(69) as result  %9.2f `nobs' / `m'
-
-    
+	local rmse = `e(rmse)'
+	local r2 = `e(r2)'
+	
+    display _col(55) as text "Number of obs" _col(69) "=" _col(69) as result %9.0f `nobs'
+    display _col(55) as text "F(27, 50)" _col(69) "=" _col(69) as result %9.0f `m'
+    display _col(55) as text "Prob > F" _col(69) "=" _col(69) as result %9.0f `min_n'
+    display _col(55) as text "R-squared" _col(69) "=" _col(69) as result %9.0f `r2'
+    display _col(55) as text "Root MSE" _col(69) "=" _col(69) as result %9.0f `rmse'
+	disp
+    display _col(35) as text "(Std. Err. adjusted for `m' clusters in `cluster')"
+	
     display as text  "{hline 13}" "{c TT}" "{hline 64}"
-
-    display %12s abbrev("`t'",12)   _col(14) "{c |}" ///
+	
+    display						   _col(14) "{c |}" ///
+                                    _col(21) "" ///
+                                    _col(29) "Robust" 
+	
+	display %12s abbrev("`t'",12)   _col(14) "{c |}" ///
                                     _col(21) "Coef." ///
                                     _col(29) "Std. Err." ///
                                     _col(40) "dfs" ///
                                     _col(50) "p-value" ///
                                     _col(60) "[" `level' "%Conf. Interval]"
-
+									
+	
     display as text  "{hline 13}" "{c +}" "{hline 64}"                            
 
     scalar `prob' = 0
@@ -747,6 +755,8 @@ program define reg_sandwich, eclass sortpreserve
 	ereturn local vce "cluster"
 	ereturn local vcetype "Robust"
 	ereturn scalar N_clusters = `m'
+	ereturn scalar r2 = `r2'
+	ereturn scalar rmse = `rmse'
 	ereturn matrix dfs = `_dfs'
 	
 	ereturn local clustvar = "`cluster'"
