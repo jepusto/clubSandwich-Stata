@@ -43,6 +43,7 @@ local i = 0
 local i = `i'+1
 timer on `i'
 xi, noomit: reg_sandwich `specification', nocons cluster(state)
+ereturn list
 ** Ftests:
 timer off `i'
 local i = `i'+1
@@ -106,6 +107,7 @@ local i = 0
 local i = `i'+1
 timer on `i'
 xi, noomit: reg_sandwich `specification' [aweight=pop], nocons cluster(state)
+ereturn list
 
 timer off `i'
 local i = `i'+1
@@ -168,6 +170,7 @@ local i = 0
 local i = `i'+1
 timer on `i'
 xi, noomit: reg_sandwich `specification' [pweight=pop], nocons cluster(state)
+ereturn list
 
 timer off `i'
 local i = `i'+1
@@ -237,6 +240,7 @@ local i = `i'+1
 xi: reg_sandwich `specification' i.state,  cluster(state)
 timer on `i'
 xi: reg_sandwich `specification', absorb(state) cluster(state)
+ereturn list
 
 timer off `i'
 local i = `i'+1
@@ -304,6 +308,7 @@ local i = `i'+1
 xi, noomit: reg_sandwich `specification' i.state [aweight=pop], cluster(state)
 timer on `i'
 xi, noomit: reg_sandwich `specification' [aweight=pop], absorb(state) cluster(state)
+ereturn list
 
 timer off `i'
 local i = `i'+1
@@ -369,6 +374,7 @@ local i = `i'+1
 xi, noomit: reg_sandwich `specification' i.state [pweight=pop], cluster(state)
 timer on `i'
 xi, noomit: reg_sandwich `specification' [pweight=pop], absorb(state) cluster(state)
+ereturn list
 
 timer off `i'
 local i = `i'+1
