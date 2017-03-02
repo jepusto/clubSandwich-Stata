@@ -695,13 +695,13 @@ program define reg_sandwich, eclass sortpreserve
         scalar `variance' = `V'[`i',`i']
         scalar `dof' = `_dfs'[1,`i']
 
-        if `dof' < 4 {
-            local problem "!"
-            scalar `prob' = 1
-        }
-        else {
+        *if `dof' < 4 {
+        *    local problem "!"
+        *    scalar `prob' = 1
+        *}
+        *else {
             local problem ""
-        }
+        *}
 
         display %12s abbrev("`v'",12)   _col(14) "{c |}" ///
                                         _col(16) "`problem'" ///
@@ -740,11 +740,7 @@ program define reg_sandwich, eclass sortpreserve
     }
 
     display as text  "{hline 13}" "{c BT}" "{hline 64}" 
-    if `prob' == 1 {
-        di as error "! dof is less than 4, p-value untrustworthy"
-        di as error "see Tipton, E. (in press) Small sample adjustments for robust variance"
-        di as error "estimation with meta-regression. Forthcoming in Psychological Methods."
-    }
+    
 
    /*********************/
     /*  post results  */
