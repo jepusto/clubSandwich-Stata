@@ -140,23 +140,15 @@ program define reg_sandwich, eclass sortpreserve
 		}
 	}
 	** call main regression:
-	*disp "timer 1 start: main regression"
-	*timer on 1
-	*disp "`main_function' `t' `x' `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'"
 	noisily capture: `main_function' `t' `x'  `weight_call' if `touse', `constant' cluster(`cluster') `absorb_call'
 	
-
-	*timer off 1
-	*disp "timer 1 off"
 	if "`main_function'" == "areg" {
 		local old_x = "`x'"
 		local x = "`new_x'"
 	}
 	
 	
-	** prep for small sample reduced t-test:
-	* (based on robumetaMt12.ado:
-		
+	** prep for small sample reduced t-test:		
 	matrix p = rowsof(e(V))
 	local p = p[1,1]
 	matrix drop p
@@ -217,15 +209,9 @@ program define reg_sandwich, eclass sortpreserve
 	tempname b_temp
 	matrix `b_temp' = e(b)
 	matrix `b' = `b_temp'[1, 1..`p']
-	
-	*quietly : by `clusternumber': egen double `v_n' = count(`theta') if `touse'
-	*			quietly sum `v_n' if `touse'				
-	*			scalar `min_n' = r(min) 
-	*			scalar `max_n' = r(max)
-	
 
-	*disp "timer 2 start: MXWTWXM"
-	*timer on 2
+	* Auxiliary matrices
+	*********************
 	if "`constant'"=="" & "`main_function'" != "areg" {
 		mkmat `x' `cons' if `touse', matrix(`X')
 		matrix colnames `X' = `x' _cons
@@ -250,8 +236,7 @@ program define reg_sandwich, eclass sortpreserve
 		
 	}
 				
-	
-	
+		
 	if "`type_VCR'" == "WLSp" {	
 		*matrix `MXWTWXM' =  `M'*`X''*`W'*`W'*`X'*`M'
 		mata: st_matrix("`MXWTWXM'", st_matrix("`M'")*st_matrix("`X'")'*st_matrix("`W'")*st_matrix("`W'")*st_matrix("`X'")*st_matrix("`M'"))
@@ -269,8 +254,6 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	matrix drop `X'
-	*timer off 2
-	*disp "timer 2 off"
 	
 	/********************************************************************/
     /*    Variance covariance matrix estimation for standard errors     */
@@ -283,15 +266,12 @@ program define reg_sandwich, eclass sortpreserve
 		
 	local current_jcountFtest = 0
 	local first_cluster = 1
-	*local endj = 0
+
 	tempname Pj_relevant  Pj_Theta_Pj_relevant
 	tempname evecs evals sq_inv_Bj
 	tempname PPj
-	*disp "timer 3 start: Ajs and save per cluster"
 	
     foreach j in `idlist' {
-	*timer on 3
-	*disp "cluster `j'"
 		
 		if "`constant'"=="" & "`main_function'" != "areg" {
 			mkmat `x' `cons' if `touse' & `clusternumber' == `j', matrix(`Xj')
@@ -340,7 +320,6 @@ program define reg_sandwich, eclass sortpreserve
 		}
 		
 		* Symmetric square root of the Moore-Penrose inverse of Bj
-		
 		mat symeigen `evecs' `evals' = `Bj'
 		mata: st_matrix( "`sq_inv_Bj'", st_matrix( "`evecs'")*diag(editmissing(st_matrix( "`evals'"):^(-1/2),0))*st_matrix( "`evecs'")')
 											
@@ -491,19 +470,11 @@ program define reg_sandwich, eclass sortpreserve
 			}
 		}
 		
-		
-			
-		*timer off 3
-	
     }
-	*disp "timer 3 off"
-
 	
-	*matrix drop `Aj' `Wj' `Xj' `middle_Aj'  `ej'
-		
+	
 	* RVE estimator
 	matrix `V' = `M' * `XWAeeAWX' * `M'
-	
 	
 	* Tests:
 	if "`type_VCR'" == "WLSp" {
@@ -522,39 +493,6 @@ program define reg_sandwich, eclass sortpreserve
 			}
 	}
 	
-	*matrix `_dfs' =  J(1,`p', 0) 
-	*disp "timer 4 start: T-tests i:j"
-	*timer on 4
-	
-	
-	/*F-Test
-	tempname C_Ftest Omega_Ftest matrix_Ftest z_Ftest D_Ftest Q_Ftest
-	local q_Ftest = 0
-	foreach current_x in `x' {
-			local ++q_Ftest
-	}
-	matrix `C_Ftest' = I(`p') // C is initialized as a p x p matrix of zeros
-	* correct for constant usage
-	matrix `C_Ftest' = `C_Ftest'[1..`q_Ftest',1..`p']
-	
-	matrix `Omega_Ftest' = `C_Ftest'*`MXWTWXM'*`C_Ftest''
-	matsqrt `Omega_Ftest'
-	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')
-
-	mata: st_local("Sum_temp_calc2", test_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"),  st_matrix("`MXWTWXM'"),  st_matrix("`matrix_Ftest'"),  st_matrix("`C_Ftest'")))
-	
-	local eta_Ftest = (`q_Ftest'*(`q_Ftest'+1))/`Sum_temp_calc2'
-	
-	matrix `z_Ftest' = invsym(sq_`Omega_Ftest')*(`C_Ftest'*`b'')
-	matrix `D_Ftest' = invsym(sq_`Omega_Ftest')*`C_Ftest'*`V'*`C_Ftest''*invsym(sq_`Omega_Ftest')
-	matrix `Q_Ftest' = `z_Ftest''*invsym(`D_Ftest')*`z_Ftest'
-
-	local F_stat = ((`eta_Ftest' - `q_Ftest' + 1)/(`eta_Ftest'*`q_Ftest'))* `Q_Ftest'[1,1]
-	local F_df1 = `q_Ftest'
-	local F_df2 = `eta_Ftest' - `q_Ftest' + 1
-	
-	local F_pvalue = Ftail(`F_df1',`F_df2',`F_stat')
-	*/
 	
 	* T-test, using as a special case of an F-test:
 	mata: st_matrix("`_dfs'", reg_sandwich_ttests("`type_VCR'", `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"), st_matrix("`M'"),  st_matrix("`MXWTWXM'")))
@@ -571,104 +509,17 @@ program define reg_sandwich, eclass sortpreserve
 	}
 
 	
-	/*
-	forvalues i = 1/`m'{
-		* We use the symmetry here, since that temp(i,j) =temp(j,i)
-		forvalues j = `i'/`m'{
-		
-		*disp "`i':`j'"
-			if `i' == `j'{
-	
-				matrix  `PThetaP' = `P`i'_Theta_P`i'_relevant'
-	
-			}
-			else {
-				* i ~= j 
-				* M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M
-				* and we call M*Xi'*Wi*Ai*(I-Hx)i*Theta*(I-Hx)j'*Aj*Wj*Xj*M:
-				* Pi_Theta_Pi_relevant
-				*
-				*
-				* if i!=j
-				* (I-Hx)i*Theta*(I-Hx)j'
-				*
-				* For OLS this simplifies to:
-				* - Xi*M*Xj'
-				*
-				* For WLSp, this simplifies to:
-				* - Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj     + Xi*(M*X'*W*W*X*M)*Xj'
-				*
-				* For WLSa, this simplified to:
-				* - Xi*M*Xj' 
-				* 
-				* For OLS and WLSa we call M*Xi'*Wi*Ai*Xi:
-				* Pi_relevant (and ignore the (min) sign, since it will be cancelled out after multiplication)
-				*
-				* For WLSp we call  M*Xi'*Wi*Ai
-				* Pi_relevant,
-				* and M*Xi'*Wi*Ai as PPi
-				
-				if "`type_VCR'" == "OLS" {
-					matrix  `PThetaP' = `P`i'_relevant'*`M'*`P`j'_relevant''														
-				}
-				else if "`type_VCR'" == "WLSp" {
-				
-					matrix  `PThetaP' = `P`i'_relevant'* ///
-										(-`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j''')* ///
-										`P`j'_relevant''
-					
-					
-				}
-				else if "`type_VCR'" == "WLSa" {
-					matrix  `PThetaP' = `P`i'_relevant'*`M'*`P`j'_relevant''
-				}
-			}
-		
-			forvalues coefficient = 1/`p' {
-				
-				* prep C
-					
-				* * Define C
-				matrix `C_ttest' = J(1, `p', 0) // C is initialized as a 1 x p matrix of zeros
-				
-				matrix `C_ttest'[1,`coefficient'] = 1
-				
-				
-				matrix `Omega_ttest' = `C_ttest'*`MXWTWXM'*`C_ttest''	
-				
-				local temp_val = `Omega_ttest'[1,1]
-				matrix `matrix_ttest' = (1/sqrt(`temp_val'))*`C_ttest'
-				matrix `temp_calc' = `matrix_ttest'*`PThetaP'*`matrix_ttest''
-				local  temp_calc2 = 2*((`temp_calc'[1,1])^2)
-				
-				* We use the symmetry here, since that temp(i,j) =temp(j,i)
-				if `i'==`j'{
-					matrix `_dfs'[1,`coefficient'] = `_dfs'[1,`coefficient'] + `temp_calc2'
-					
-				}
-				else {
-					matrix `_dfs'[1,`coefficient'] = `_dfs'[1,`coefficient'] + 2*`temp_calc2'
-				}
-				
-			}
-			matrix drop `PThetaP'
-		
-		} 
-		
-		
-	}
-	*/
-	*timer off 4	
-	*disp "timer 4 off"
 	forvalues coefficient = 1/`p' {
 		matrix `_dfs'[1,`coefficient'] = 2/`_dfs'[1,`coefficient']
 	}
 	
      
-    display _newline
+    /*********************/
+    /*  Display results  */
+    /*********************/
+	
+	display _newline
     display as text "Robust Small Sample Corrected standard error estimation using " as result "`main_call_display'`absorb_call_display'"
-
-
 
 	if "`main_function'" == "areg" {
 		if "`type_VCR'" == "WLSp" {
@@ -692,10 +543,6 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 
-    
-    /*********************/
-    /*  Display results  */
-    /*********************/
 	* save main regression results
 	local mss = `e(mss)'
 	local rss = `e(rss)'
@@ -704,11 +551,8 @@ program define reg_sandwich, eclass sortpreserve
 	local r2 = `e(r2)'
 	local r2_a = `e(r2_a)'
 	
-	*local F_df2_disp = round(`F_df2',0.01) 
-	
+
     display _col(55) as text "Number of obs" _col(69) "=" _col(69) as result %9.0f `nobs'
-    *display _col(55) as text "F(`F_df1', `F_df2_disp')" _col(69) "=" _col(69) as result %9.4f `F_stat'
-    *display _col(55) as text "Prob > F" _col(69) "=" _col(69) as result %9.4f `F_pvalue'
     display _col(55) as text "R-squared" _col(69) "=" _col(69) as result %9.4f `r2'
 	display _col(55) as text "Adj R-squared" _col(69) "=" _col(69) as result %9.4f `r2_a'
     display _col(55) as text "Root MSE" _col(69) "=" _col(69) as result %9.4f `rmse'
@@ -731,7 +575,6 @@ program define reg_sandwich, eclass sortpreserve
 	
     display as text  "{hline 13}" "{c +}" "{hline 64}"                            
 
-    scalar `prob' = 0
 	tempname effect variance dof
     local i = 1
 
@@ -740,16 +583,8 @@ program define reg_sandwich, eclass sortpreserve
         scalar `variance' = `V'[`i',`i']
         scalar `dof' = `_dfs'[1,`i']
 
-        *if `dof' < 4 {
-        *    local problem "!"
-        *    scalar `prob' = 1
-        *}
-        *else {
-            local problem ""
-        *}
-
         display %12s abbrev("`v'",12)   _col(14) "{c |}" ///
-                                        _col(16) "`problem'" ///
+                                        _col(16) "" ///
                                         _col(21) %5.3f `effect' ///
                                         _col(29) %5.2f sqrt(`variance') ///
                                         _col(40) %5.2f `dof' ///
@@ -787,8 +622,8 @@ program define reg_sandwich, eclass sortpreserve
     display as text  "{hline 13}" "{c BT}" "{hline 64}" 
     
 
-   /*********************/
-    /*  post results  */
+    /*********************/
+    /*  post results     */
     /*********************/
 	ereturn post `b' `V', obs(`nobs') depname(`t') esample(`touse')
 	
@@ -830,13 +665,7 @@ program define reg_sandwich, eclass sortpreserve
 
 	}
 	
-	* F-test:
-	* save some results
-	*ereturn scalar F = `F_stat'
-	*ereturn scalar df_m = `F_df1'
-	*ereturn scalar df_r = `F_df2'
-	
-	
+
 	ereturn matrix MXWTWXM = `MXWTWXM'			
 	ereturn local indepvars `x'
 	
@@ -849,8 +678,6 @@ program define reg_sandwich, eclass sortpreserve
 	
 	ereturn local cmdline "reg_sandwich `0'"
 	ereturn local cmd "reg_sandwich"
-	*timer off 5
-	*disp "timers:"
-	*timer list
+
 end
 	
