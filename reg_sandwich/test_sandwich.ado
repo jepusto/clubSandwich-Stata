@@ -39,7 +39,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			 F_stat F_df1 F_df2 F_pvalue ///
 			 MXWTWXM
 
-	*verify that this is run after robumeta:
+	*verify that this is run after reg_sandwich:
 
 	if e(cmd) !="reg_sandwich" {
 		display as error "{it:test_sandwich} can only be used after {it:reg_sandwich}"
@@ -244,16 +244,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		
 	} 
 
-	/*else {
-		forvalues i = 1/`m'{
-			local starti = (`i'-1)*`p'+1
-			local endi = `starti'+`p'-1
-						
-			tempname P`i'_relevant
-			
-			matrix `P`i'_relevant' = `Big_P_relevant'[`starti'..`endi',1..`p']'
-		}
-	}*/
 	
 	matrix `MXWTWXM' = e(MXWTWXM)
 	matrix `Omega_Ftest' = `C_Ftest'*`MXWTWXM'*`C_Ftest''
@@ -262,84 +252,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 
 	mata: st_local("Sum_temp_calc2", test_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"),  st_matrix("`MXWTWXM'"),  st_matrix("`matrix_Ftest'"),  st_matrix("`C_Ftest'")))
 	
-	/*
-	local Sum_temp_calc2 = 0
-	
-	forvalues s = 1/`q_Ftest'{
-		
-		matrix `gs' = `matrix_Ftest'[1..`q_Ftest',`s']
-		
-		* We use the symmetry here, since that temp_calc2 = Var_d_ts
-		forvalues t = `s'/`q_Ftest'{
-			
-			matrix `gt' = `matrix_Ftest'[1..`q_Ftest',`t']
-			
-			* get Var(d_st)
-			local temp_calc2 = 0
-			forvalues i = 1/`m'{
-				* We use the symmetry here, since that temp(i,j) =temp(j,i)
-				forvalues j = `i'/`m'{
-					
-					if `i' == `j'{
-						local start = (`i'-1)*`p'+1
-						local end = `start'+`p'-1
-						
-						matrix `Pi_Theta_Pi' = `Big_PThetaP_relevant'[`start'..`end',1..`p']
-	
-						matrix `temp_calc' = `gs''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gt'*`gt''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gs'+ ///
-											 `gs''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gs'*`gt''*`C_Ftest'*`Pi_Theta_Pi'*`C_Ftest''*`gt'
-
-					}
-					else {
-						
-						if "`type_VCR'" == "WLSp" {
-						
-							* for this weighitng type, we need to use V for Theta
-							* inv(sq_Omega)*C*M*Xi'*Wi*Ai*(I-X*M*X'*W)i*V*(I-X*M*X'*W)j'*Aj'*Wj*Xj*M'*C*inv(sq_Omega)
-							* we use the fact that 
-							* (I-X*M*X'*W)i*V*(I-X*M*X'*W)j' = 
-							*
-							* if i!=j
-							* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Vj     + Xi*(M*X'*W*V*W*X*M)*Xj'
-							* we call PPj = Vj*Wj*Xj*M
-											
-							matrix `middle_PThetaP' = -`PP`i''*`X`j'''-`X`i''*`PP`j''' + `X`i''*`MXWTWXM'*`X`j'''
-
-						}
-						else {
-							
-							matrix `middle_PThetaP' = `MXWTWXM'
-							
-						}
-						
-						
-						matrix `temp_calc' = `gs''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gt'*`gt''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gs' + ///
-											 `gs''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gs'*`gt''*`C_Ftest'*`P`i'_relevant'*`middle_PThetaP'*`P`j'_relevant''*`C_Ftest''*`gt'
-					
-						matrix drop `middle_PThetaP'
-					}
-					* We use the symmetry here, since that temp(i,j) =temp(j,i)
-					if `i'==`j'{
-						local temp_calc2 = `temp_calc2' + `temp_calc'[1,1]	
-					}
-					else {
-						local temp_calc2 = `temp_calc2' + 2*`temp_calc'[1,1]
-					}
-				} 
-			}
-			
-			* update SumSum temp_calc
-			* We use the symmetry here, since that temp_calc2(i,j) = temp_calc2(j,i)
-			if `s'==`t' {
-				local Sum_temp_calc2 = `Sum_temp_calc2' + `temp_calc2'
-			}
-			else {
-				local Sum_temp_calc2 = `Sum_temp_calc2' + 2*`temp_calc2'
-			}
-			
-		}
-	}
-	*/
 		
 	if "`type_VCR'" == "WLSp" {
 		forvalues i = 1/`m'{
