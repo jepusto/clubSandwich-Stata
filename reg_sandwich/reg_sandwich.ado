@@ -633,7 +633,7 @@ program define reg_sandwich, eclass sortpreserve
 	ereturn scalar N_clusters = `m'
 	
 	ereturn scalar r2 = `r2'
-	ereturn scalar r2 = `r2_a'
+	ereturn scalar r2_a = `r2_a'
 	
 	ereturn scalar rss = `rss'
 	ereturn scalar mss = `mss'
