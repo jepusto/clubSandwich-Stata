@@ -89,29 +89,47 @@ HERE COMES THE DETAILED DESCRIPTION.
 {synoptset 20 tabbed}{...}
 {p2col 5 20 24 2: Scalars}{p_end}
 {synopt:{cmd:e(N)}}number of observations{p_end}
-{synopt:{cmd:e(N_g)}}number of studies{p_end}
-{synopt:{cmd:e(df_r)}}model degrees of freedom{p_end}
 
-{synopt:{cmd:e(tau2)}} method-of-moments tau-square estimate {p_end}
-{synopt:{cmd:e(tau2o)}} observed tau-square if estimate is negative{p_end}
+{synopt:{cmd:e(r2)}}R-squared{p_end}
+{synopt:{cmd:e(r2_a)}}adjusted R-squared{p_end}
 
-{synopt:{cmd:e(omega2)}} method-of-moments omega-square estimate (used in hierarchical model) {p_end}
-{synopt:{cmd:e(omega2o)}} observed omega-square if estimate is negative{p_end}
+{synopt:{cmd:e(rss)}}residual sum of squares{p_end}
+{synopt:{cmd:e(mss)}}model sum of squares{p_end}
+{synopt:{cmd:e(rmse)}}root mean squared error{p_end}
 
-{synopt:{cmd:e(QE)}}QE used for estimating tau-square {p_end}
-{synopt:{cmd:e(QR)}}QR used for estimating omega-square {p_end}
-
-{synopt:{cmd:e(rho)}} in correlated effects models, use specified ICC{p_end}
 
 {synoptset 20 tabbed}{...}
 {p2col 5 20 24 2: Macros}{p_end}
-{synopt:{cmd:e(cmd)}}{cmd:robumeta}{p_end}
+{synopt:{cmd:e(cmd)}}{cmd:reg_sanfwich}{p_end}
+{synopt:{cmd:e(cmdline)}}command as typed{p_end}
+
 {synopt:{cmd:e(depvar)}}{depvar}{p_end}
+{synopt:{cmd:e(indepvar)}}expanded list of depvars, after correcting for multicolinerity{p_end}
+{synopt:{cmd:e(constant_used)}}0 if false, 1 if true{p_end}
+
+{synopt:{cmd:e(wtype)}}weight type{p_end}
+{synopt:{cmd:e(wexp)}}weight expression{p_end}
+
+{synopt:{cmd:e(clustvar)}}name of cluster variable{p_end}
+{synopt:{cmd:e(absvar)}}name of absorb variable (if absorb option is used){p_end}
+
+{synopt:{cmd:e(vce)}}cluster{p_end}
+{synopt:{cmd:e(vcetype)}}Robust{p_end}
+
+{synopt:{cmd:e(properties)}}{cmd:b V}{p_end}
+{synopt:{cmd:e(type_VCE)}}OLS if unweighetd, WLSa if using aweigths and WLSp if using pweights {p_end}
+
 
 {p2col 5 20 24 2: Matrices}{p_end}
 {synopt:{cmd:e(b)}}coefficient vector{p_end}
 {synopt:{cmd:e(V)}}variance-covariance matrix of the estimators{p_end}
 {synopt:{cmd:e(dfs)}}Degrees of freedom for effects{p_end}
+
+{synopt:{cmd:e(MXWTWXM)}}auxiliary matrix used for F-testing{p_end}
+{synopt:{cmd:e(PThetaP_relevant)}}auxiliary matrix used for F-testing{p_end}
+{synopt:{cmd:e(P_relevant)}}auxiliary matrix used for F-testing{p_end}
+{synopt:{cmd:e(PP)}}auxiliary matrix used for F-testing (used for p-weights only){p_end}
+
 
 {synoptset 20 tabbed}{...}
 {p2col 5 20 24 2: Functions}{p_end}
