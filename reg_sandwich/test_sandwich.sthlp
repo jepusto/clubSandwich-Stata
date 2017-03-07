@@ -44,7 +44,7 @@ It computes a small sample corrected F-test of parameters included in {varlist},
 {dlgtab:Main}
 
 {phang}
-{opt cons} includes the constant term in the estimation.
+{opt cons} includes the constant term in the F-test.
 
 {marker remarks}{...}
 {title:Remarks}
