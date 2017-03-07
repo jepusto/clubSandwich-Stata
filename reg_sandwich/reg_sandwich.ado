@@ -22,7 +22,7 @@ capture program drop reg_sandwich
 program define reg_sandwich, eclass sortpreserve
 	
 	version 14.2 
-	syntax varlist(min=1 numeric fv) [if] [in] ///
+	syntax varlist(min=1 numeric) [if] [in] ///
 	[aweight pweight],  ///
     cluster(varlist max=1 numeric) ///
 	[absorb(varlist max=1 numeric)] ///

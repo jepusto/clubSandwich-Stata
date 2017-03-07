@@ -36,8 +36,6 @@ cluster({varname})
 {synoptline}
 
 {p 4 6 2}
-indepvars may contain factor variables; see {help fvvarlist}.{p_end}
-{p 4 6 2}
 {cmd:aweight}s and {cmd:pweight}s are
 allowed; see {help weight}.{p_end}
 
