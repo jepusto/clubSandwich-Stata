@@ -49,8 +49,8 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
    *specify the temporary variables used in the program
-    tempvar cons w wh wfinal    ///
-     prime_resid  v_n  clusternumber  ///
+    tempvar cons wfinal    ///
+     prime_resid  clusternumber  ///
 	theta
 	   
     *specifiy the temporary scalars and matrixes
@@ -67,10 +67,12 @@ program define reg_sandwich, eclass sortpreserve
 		cluster_list ///
 		C_ttest ///
 		Omega_ttest matrix_ttest ///
-		temp_calc ///
-		prob  ///
-		T Dj inv_Bj ///
-		Xi Wi Ti Bi Ai inv_Bi
+		T Dj ///
+		b_temp ///
+		Pj_relevant  Pj_Theta_Pj_relevant ///
+		evecs evals sq_inv_Bj ///
+		PPj
+		
 
 
 	*generate constant term
@@ -206,7 +208,6 @@ program define reg_sandwich, eclass sortpreserve
 	
 	* beta
 	*******
-	tempname b_temp
 	matrix `b_temp' = e(b)
 	matrix `b' = `b_temp'[1, 1..`p']
 
@@ -266,10 +267,6 @@ program define reg_sandwich, eclass sortpreserve
 		
 	local current_jcountFtest = 0
 	local first_cluster = 1
-
-	tempname Pj_relevant  Pj_Theta_Pj_relevant
-	tempname evecs evals sq_inv_Bj
-	tempname PPj
 	
     foreach j in `idlist' {
 		
@@ -600,16 +597,8 @@ program define reg_sandwich, eclass sortpreserve
         scalar `variance' = `V'[`i',`i']
         scalar `dof' = `_dfs'[1,`i']
 
-        if `dof' < 4 {
-            local problem "!"
-            scalar `prob' = 1
-        }
-        else {
-            local problem ""
-        }
-
         display %12s abbrev("`v'",12)   _col(14) "{c |}" ///
-                                        _col(16) "`problem'" ///
+                                        _col(16) "" ///
                                         _col(21) %5.3f `effect' ///
                                         _col(29) %5.2f sqrt(`variance') ///
                                         _col(40) %5.2f `dof' ///
