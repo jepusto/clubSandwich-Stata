@@ -39,12 +39,17 @@ cluster({varname})
 {cmd:aweight}s and {cmd:pweight}s are
 allowed; see {help weight}.{p_end}
 
+{p 4 6 2}
+{cmd:reg_sandwich} uses the supporting mata function
+reg_sandwich_ttests.mo{p_end}
+
 
 {title:Description}
 
 {pstd}
 HERE COMES THE DETAILED DESCRIPTION.
 {cmd: reg_sandwich} fits a linear regression using {help regress}, optionally passing aweights or pweights (see {help weight}). If {it:absorb} is provided regression are fitted using {help areg}.
+
 {p_end}
 
 {title:Arguments}
