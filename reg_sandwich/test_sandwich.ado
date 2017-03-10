@@ -206,7 +206,16 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		matrix `Big_PP' = e(PP)
 		
 		local cluster = e(clustvar)
-		quietly : gen double `clusternumber' = `cluster' if e(sample)
+		capture confirm numeric variable `cluster'
+		if _rc==0 {
+			* numeric
+		   quietly : gen double `clusternumber' = `cluster' if e(sample)
+		}
+		else {
+			* string
+			quietly: encode `cluster' if e(sample), gen(`clusternumber') 
+		}
+		
 		quietly sort `clusternumber' `_sortindex'
 		qui: tab `clusternumber' if e(sample), matrow(`cluster_list')
 

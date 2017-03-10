@@ -24,7 +24,7 @@ program define reg_sandwich, eclass sortpreserve
 	version 14.2 
 	syntax varlist(min=1 numeric) [if] [in] ///
 	[aweight pweight],  ///
-    cluster(varlist max=1 numeric) ///
+    cluster(varlist max=1 ) ///
 	[absorb(varlist max=1 numeric)] ///
 	[noCONstant] ///
 	[Level(cilevel)]
@@ -161,7 +161,16 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	*capture ids
-    quietly : gen double `clusternumber' = `cluster' if `touse'
+	capture confirm numeric variable `cluster'
+	if _rc==0 {
+		* numeric
+	   quietly : gen double `clusternumber' = `cluster' if `touse'
+	}
+	else {
+		* string
+		quietly: encode `cluster' if `touse', gen(`clusternumber') 
+	}
+    
     quietly sort `clusternumber' `_sortindex'
     quietly : levelsof `clusternumber', local(idlist)
 	
