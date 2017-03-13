@@ -16,9 +16,6 @@ cluster({varname})
 [absorb({varname}) | {cmdab:nocon:stant}] 
 [level({#})]
 
-
-
-
 {synoptset 26 tabbed}{...}
 {synopthdr}
 {synoptline}
