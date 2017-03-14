@@ -29,8 +29,6 @@ program define reg_sandwich, eclass sortpreserve
 	[noCONstant] ///
 	[Level(cilevel)]
 	
-	*timer clear 
-	*timer on 5
 	
 	*mark sample
     marksample touse
@@ -447,7 +445,6 @@ program define reg_sandwich, eclass sortpreserve
 	
 	
 	* RVE estimator
-	
 	mata: st_matrix ("`V'" , M * XWAeeAWX * M)
 	mata: mata drop XWAeeAWX
 	
@@ -591,7 +588,6 @@ program define reg_sandwich, eclass sortpreserve
 
     display as text  "{hline 13}" "{c BT}" "{hline 64}" 
     
-
     /*********************/
     /*  post results     */
     /*********************/
