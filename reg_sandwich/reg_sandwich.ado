@@ -629,7 +629,7 @@ program define reg_sandwich, eclass sortpreserve
 	*ereturn matrix P_relevant = `Big_P_relevant' 
 	*ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
 	if "`type_VCR'" == "WLSp" {
-		ereturn matrix PP = `Big_PP'
+		*ereturn matrix PP = `Big_PP'
 		if "`main_function'" == "areg" {
 			ereturn matrix Ur = `X'
 		}
