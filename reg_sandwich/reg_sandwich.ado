@@ -441,12 +441,17 @@ program define reg_sandwich, eclass sortpreserve
 	mata: mata drop evals
 	mata: mata drop evecs
 	mata: mata drop Aj
+	mata: mata drop Pj_Theta_Pj_relevant
+	mata: mata drop Pj_relevant
 	if "`type_VCR'" ~="OLS"{
 		mata: mata drop Wj
 	}
 	
 	if "`type_VCR'" == "WLSa" {
 		mata: mata drop Dj
+	}
+	if "`type_VCR'" == "WLSp" {
+		mata: mata drop PPj
 	}
 	
 	* RVE estimator
