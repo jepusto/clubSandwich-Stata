@@ -261,7 +261,7 @@ program define reg_sandwich, eclass sortpreserve
 	mata: Xj = .
 	mata: ej = .
     foreach j in `idlist' {
-		
+
 		qui: replace `selectvar' = `touse' & `clusternumber' == `j'
 		
 		if "`constant'"=="" & "`main_function'" != "areg" {
@@ -323,9 +323,8 @@ program define reg_sandwich, eclass sortpreserve
 			mata: XWAeeAWX = Xj' * Aj * ej * ej' * Aj * Xj + XWAeeAWX
 		}
 		else {
-			mata: XWAeeAWX = Xj' * Wj * Aj * Wj * Aj * ej * ej' * Aj * Wj * Xj + XWAeeAWX
+			mata: XWAeeAWX = Xj' * Wj * Aj * ej * ej' * Aj * Wj * Xj + XWAeeAWX
 		}
-
 		
 		**** F-test:
 		* 
