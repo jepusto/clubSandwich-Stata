@@ -508,8 +508,7 @@ program define reg_sandwich, eclass sortpreserve
 
 	if "`main_function'" == "areg" {
 		if "`type_VCR'" == "WLSp" {
-			mkmat `x'  if `touse', matrix(`X')
-			matrix colnames `X' = `old_x'
+			mata: Ur = st_data(., "`x'","`touse'")
 		}
 		local x = "`old_x'"
 			
@@ -630,19 +629,6 @@ program define reg_sandwich, eclass sortpreserve
 			ereturn local absvar = "`absorb'"
 	}
     
-	* Ftest	
-	*ereturn matrix P_relevant = `Big_P_relevant' 
-	*ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
-	if "`type_VCR'" == "WLSp" {
-		*ereturn matrix PP = `Big_PP'
-		if "`main_function'" == "areg" {
-			ereturn matrix Ur = `X'
-		}
-
-	}
-	
-
-	*ereturn matrix MXWTWXM = `MXWTWXM'			
 	ereturn local indepvars `x'
 	
 	if "`constant'"=="" & "`main_function'" != "areg" {

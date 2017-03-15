@@ -38,7 +38,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			 b V ///
 			 F_stat F_df1 F_df2 F_pvalue ///
 			 MXWTWXM ///
-			 temp_Ftest
+			 temp_Ftest ///
+			 selectvar
 
 	*verify that this is run after reg_sandwich:
 
@@ -48,6 +49,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		exit
 	}
 	
+	* create placeholder for mata selection
+	qui: gen `selectvar'=.
 	
 	* F-test:
 	* 
@@ -198,13 +201,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			quietly : gen double `Fconstant' = 1 if e(sample)
 		}
 		
-		if "`e(absvar)'"~=""{
-			tempname Ur
-			matrix `Ur' = e(Ur)
-		}
-		
-		matrix `Big_PP' = e(PP)
-		
 		local cluster = e(clustvar)
 		capture confirm numeric variable `cluster'
 		if _rc==0 {
@@ -223,9 +219,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		local endi = 0
 		
 		forvalues i = 1/`m'{
- 
-
-						
+ 						
 			tempname X`i' PP`i' P`i'_relevant
 			
 			local starti = `endi'+1
@@ -233,26 +227,31 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 			if "`e(absorb)'"~=""{
 				qui: sum  `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1]
 				local endi  =  `starti' + r(N) -1
-				matrix X`i' = `Ur'[`starti'..`endi',1..`p']
+				mata: X`i' = Ur[`starti'..`endi',1..`p']
 			}
 			else {
+
+				qui: replace `selectvar' = e(sample) & `clusternumber' == `cluster_list'[`i',1]
+				mata: X`i' = .
+				
 				if "`constant_used'" == "1" {
-					mkmat `x' `Fconstant' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')		
+					mata: st_view(X`i', ., "`x' `Fconstant'","`selectvar'")
+		
 				}
 				else {
-					mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')	
+					mata: st_view(X`i', ., "`x'","`selectvar'")
 				}
-				local endi  =  `starti' + rowsof(X`i')-1
+				
+				mata: st_local("rows_number", strofreal(rows(X`i')))
+				local endi  =  `starti' + `rows_number' - 1
 			}
 			
-			
-			
-			matrix PP`i' = `Big_PP'[`starti'..`endi',1..`p']
-			matrix P`i'_relevant = `Big_P_relevant'[`starti'..`endi',1..`p']'
+
+			mata: PP`i' = Big_PP[`starti'..`endi',1..`p']
+			mata: P`i'_relevant = Big_P_relevant[`starti'..`endi',1..`p']'
 		}
 		
 	} 
-
 	
 	mata: Omega_Ftest = C_Ftest*MXWTWXM*C_Ftest'
 
