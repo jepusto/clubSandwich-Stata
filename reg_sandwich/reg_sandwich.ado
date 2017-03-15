@@ -441,7 +441,13 @@ program define reg_sandwich, eclass sortpreserve
 	mata: mata drop evals
 	mata: mata drop evecs
 	mata: mata drop Aj
+	if "`type_VCR'" ~="OLS"{
+		mata: mata drop Wj
+	}
 	
+	if "`type_VCR'" == "WLSa" {
+		mata: mata drop Dj
+	}
 	
 	* RVE estimator
 	mata: st_matrix ("`V'" , M * XWAeeAWX * M)
