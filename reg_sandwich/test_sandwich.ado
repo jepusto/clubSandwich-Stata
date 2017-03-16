@@ -25,19 +25,13 @@ program define test_sandwich, eclass byable(recall) sortpreserve
     set type double
     syntax [varlist(default=none)], [cons]
 	
-	tempname  C_Ftest ///
-			  gs gt temp_calc2 temp_calc  ///
-			 Omega_Ftest matrix_Ftest middle_Omega ///
-			 Big_P_relevant Big_PThetaP_relevant Pi_Theta_Pi Pi_relevant Pj_relevant Big_PP middle_PThetaP ///
-			 Fconstant ///
+	tempname cluster_list
+	
+	tempvar Fconstant ///
 			 clusternumber ///
-			 cluster_list ///
-			 cluster ///
-			 eta_Ftest ///
-			 Q_Ftest z_Ftest D_Ftest ///
-			 b V ///
-			 F_stat F_df1 F_df2 F_pvalue ///
-			 MXWTWXM
+			 temp_Ftest ///
+			 selectvar ///
+			 Q_Ftest
 
 	*verify that this is run after reg_sandwich:
 
@@ -47,6 +41,8 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		exit
 	}
 	
+	* create placeholder for mata selection
+	qui: gen `selectvar'=.
 	
 	* F-test:
 	* 
@@ -109,13 +105,14 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		local ++p
 	}
 	
-	matrix `C_Ftest' = J(`q_Ftest', `p', 0) // C is initialized as a q x p matrix of zeros
+	matrix `temp_Ftest' = J(1, `p', 0) // C is initialized as a 1 x p matrix of zeros
+	mata: C_Ftest = J(`q_Ftest', `p', 0) // C is initialized as a q x p matrix of zeros
 	
 	if "`constant_used'" == "1" {
-		matrix colnames `C_Ftest' = `x' _cons
+		matrix colnames `temp_Ftest' = `x' _cons
 	}
 	else {
-		matrix colnames `C_Ftest' = `x' 	
+		matrix colnames `temp_Ftest' = `x' 	
 	}
 	
 	local current_row = 1
@@ -123,17 +120,18 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	if _rc != 6 {
 		* for each var listed in ftest, check which column it corresponds to
 		foreach current_q in `varlist'{
-			matrix `C_Ftest'[`current_row', colnumb(`C_Ftest',"`current_q'")] = 1
+			local coln = colnumb(`temp_Ftest',"`current_q'")
+			mata: C_Ftest[`current_row', `coln'] = 1
 			local ++current_row
 		}
 	}
 	
 	* If option constant is active, last column needs to be active:
 	if "`cons'" != "" {
-		matrix `C_Ftest'[`current_row', `p'] = 1
+		mata: C_Ftest[`current_row', `p'] = 1
 		local ++current_row
 	}
-	mata : st_matrix("`C_Ftest'", sort(st_matrix("`C_Ftest'"), -1..-`p'))
+	mata : C_Ftest = sort(C_Ftest, -1..-`p')
 	
     * F-test:
 	* 
@@ -189,21 +187,11 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	
 	local m = e(N_clusters)
 	
-	matrix `Big_P_relevant' = e(P_relevant)
-	matrix `Big_PThetaP_relevant' = e(PThetaP_relevant)
-	
 	if "`type_VCR'" == "WLSp" {
 
 		if "`constant_used'" == "1" {
 			quietly : gen double `Fconstant' = 1 if e(sample)
 		}
-		
-		if "`e(absvar)'"~=""{
-			tempname Ur
-			matrix `Ur' = e(Ur)
-		}
-		
-		matrix `Big_PP' = e(PP)
 		
 		local cluster = e(clustvar)
 		capture confirm numeric variable `cluster'
@@ -223,51 +211,57 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		local endi = 0
 		
 		forvalues i = 1/`m'{
- 
-
-						
-			tempname X`i' PP`i' P`i'_relevant
-			
+ 						
 			local starti = `endi'+1
 			
 			if "`e(absorb)'"~=""{
 				qui: sum  `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1]
 				local endi  =  `starti' + r(N) -1
-				matrix X`i' = `Ur'[`starti'..`endi',1..`p']
+				mata: X`i' = Ur[`starti'..`endi',1..`p']
 			}
 			else {
+
+				qui: replace `selectvar' = e(sample) & `clusternumber' == `cluster_list'[`i',1]
+				mata: X`i' = .
+				
 				if "`constant_used'" == "1" {
-					mkmat `x' `Fconstant' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')		
+					mata: st_view(X`i', ., "`x' `Fconstant'","`selectvar'")
+		
 				}
 				else {
-					mkmat `x' if e(sample) & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')	
+					mata: st_view(X`i', ., "`x'","`selectvar'")
 				}
-				local endi  =  `starti' + rowsof(X`i')-1
+				
+				mata: st_local("rows_number", strofreal(rows(X`i')))
+				local endi  =  `starti' + `rows_number' - 1
 			}
 			
-			
-			
-			matrix PP`i' = `Big_PP'[`starti'..`endi',1..`p']
-			matrix P`i'_relevant = `Big_P_relevant'[`starti'..`endi',1..`p']'
+
+			mata: PP`i' = Big_PP[`starti'..`endi',1..`p']
+			mata: P`i'_relevant = Big_P_relevant[`starti'..`endi',1..`p']'
 		}
 		
 	} 
-
 	
-	matrix `MXWTWXM' = e(MXWTWXM)
-	matrix `Omega_Ftest' = `C_Ftest'*`MXWTWXM'*`C_Ftest''
-	matsqrt `Omega_Ftest'
-	matrix `matrix_Ftest' = invsym(sq_`Omega_Ftest')
+	mata: Omega_Ftest = C_Ftest*MXWTWXM*C_Ftest'
 
-	mata: st_local("Sum_temp_calc2", test_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"),  st_matrix("`MXWTWXM'"),  st_matrix("`matrix_Ftest'"),  st_matrix("`C_Ftest'")))
+	* Symmetric square root of the Moore-Penrose inverse of Omega_Ftest
+	mata: evecs = .
+	mata: evals = .
+	mata: symeigensystem(Omega_Ftest, evecs, evals)
+	mata: sq_Omega_Ftest =  evecs*diag(editmissing(evals:^(1/2),0))*evecs'
+	
+	mata: matrix_Ftest = invsym(sq_Omega_Ftest)
+	
+	mata: st_local("Sum_temp_calc2", test_sandwich_ftests("`type_VCR'", `q_Ftest', `m', `p', Big_PThetaP_relevant,  Big_P_relevant,  MXWTWXM,  matrix_Ftest,  C_Ftest))
 	
 		
 	if "`type_VCR'" == "WLSp" {
 		forvalues i = 1/`m'{
 	
-			matrix drop PP`i' 
-			matrix drop P`i'_relevant 
-			matrix drop X`i' 
+			mata: mata drop X`i'
+			mata: mata drop PP`i'
+			mata: mata drop P`i'_relevant
 		}
 	}
 			
@@ -280,12 +274,12 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	* D = Omega^(-1/2)*C*VR*C'*Omega^(-1/2)
 	* Q = z'inv(D)z (equation 6)
 	
-	matrix `b' = e(b)
-	matrix `V' = e(V)
+	mata: b = st_matrix("e(b)")
+	mata: V = st_matrix("e(V)")
 	
-	matrix `z_Ftest' = invsym(sq_`Omega_Ftest')*(`C_Ftest'*`b'')
-	matrix `D_Ftest' = invsym(sq_`Omega_Ftest')*`C_Ftest'*`V'*`C_Ftest''*invsym(sq_`Omega_Ftest')
-	matrix `Q_Ftest' = `z_Ftest''*invsym(`D_Ftest')*`z_Ftest'
+	mata: z_Ftest = invsym(sq_Omega_Ftest)*(C_Ftest*b')
+	mata: D_Ftest = invsym(sq_Omega_Ftest)*C_Ftest*V*C_Ftest'*invsym(sq_Omega_Ftest)
+	mata: st_matrix("`Q_Ftest'", z_Ftest'*invsym(D_Ftest)*z_Ftest)
 	
 	* Now we can compute the F-statistic:
 	* (eta - q + 1)/(eta*q) * Q  follows F(q, eta - q + 1) distribution
@@ -313,7 +307,17 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	ereturn scalar F_eta = `eta_Ftest'	
 	
 	
-** Clean:
-	matrix drop sq_`Omega_Ftest'
+	* Clean:
+	mata: mata drop sq_Omega_Ftest
+	mata: mata drop C_Ftest
+	mata: mata drop D_Ftest
+	mata: mata drop Omega_Ftest
+	mata: mata drop V
+	mata: mata drop b
+	mata: mata drop evals
+	mata: mata drop evecs
+	mata: mata drop matrix_Ftest
+	mata: mata drop z_Ftest
+	
 
 end

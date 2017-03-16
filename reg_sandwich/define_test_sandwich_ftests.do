@@ -36,7 +36,20 @@ string scalar test_sandwich_ftests(string scalar type_VCR, real scalar q_Ftest, 
 				// We use the symmetry here, since that temp(i,j) =temp(j,i)
 				startj = starti
 				endj = endi
+				
+				// Read auxiliary variables for WLSp
+				if (type_VCR == "WLSp") {
+					Pi_relevant=valofexternal("P" + strofreal(i) + "_relevant")		
+					PPi = valofexternal("PP" + strofreal(i))
+					Xi = valofexternal("X" + strofreal(i))
+				}
 				for (j=i; j<=m; j++) {
+				// Read auxiliary variables for WLSp
+				if (type_VCR == "WLSp") {
+					Pj_relevant=valofexternal("P" + strofreal(j) + "_relevant")		
+					PPj = valofexternal("PP" + strofreal(j))
+					Xj = valofexternal("X" + strofreal(j))
+				}
 					
 					if (i == j){
 
@@ -56,8 +69,8 @@ string scalar test_sandwich_ftests(string scalar type_VCR, real scalar q_Ftest, 
 							* - Vi*Wi*Xi*M*Xj'   - Xi*M*Xj'*Wj*Vj     + Xi*(M*X'*W*V*W*X*M)*Xj'
 							* we call PPj = Vj*Wj*Xj*M
 							*/				
-							middle_PThetaP = -st_matrix("PP" + strofreal(i) )*st_matrix("X" + strofreal(j))'-st_matrix("X" + strofreal(i))*st_matrix("PP" + strofreal(j) )' + st_matrix("X" + strofreal(i))*MXWTWXM*st_matrix("X" + strofreal(j))'
-							temp_calc = gs'*C_Ftest* st_matrix("P" + strofreal(i) + "_relevant")*middle_PThetaP* st_matrix("P" + strofreal(j) + "_relevant")'*C_Ftest'*gt*gt'*C_Ftest* st_matrix("P" + strofreal(i) + "_relevant")*middle_PThetaP* st_matrix("P" + strofreal(j) + "_relevant")'*C_Ftest'*gs + gs'*C_Ftest* st_matrix("P" + strofreal(i) + "_relevant")*middle_PThetaP* st_matrix("P" + strofreal(j) + "_relevant")'*C_Ftest'*gs*gt'*C_Ftest* st_matrix("P" + strofreal(i) + "_relevant")*middle_PThetaP* st_matrix("P" + strofreal(j) + "_relevant")'*C_Ftest'*gt
+							middle_PThetaP = -PPi*Xj'-Xi*PPj' + Xi*MXWTWXM*Xj'
+							temp_calc = gs'*C_Ftest* Pi_relevant*middle_PThetaP*Pj_relevant'*C_Ftest'*gt*gt'*C_Ftest*Pi_relevant*middle_PThetaP*Pj_relevant'*C_Ftest'*gs + gs'*C_Ftest*Pi_relevant*middle_PThetaP*Pj_relevant'*C_Ftest'*gs*gt'*C_Ftest*Pi_relevant*middle_PThetaP*Pj_relevant'*C_Ftest'*gt
 
 						}
 						else {

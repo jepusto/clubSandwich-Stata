@@ -25,7 +25,20 @@ real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scal
 		// initialize startj and endj as same position as i
 		startj = starti
 		endj = endi
+		
+		// Read auxiliary variables for WLSp
+		if (type_VCR == "WLSp") {
+			Pi_relevant=valofexternal("P" + strofreal(i) + "_relevant")		
+			PPi = valofexternal("PP" + strofreal(i))
+			Xi = valofexternal("X" + strofreal(i))
+		}
 		for (j=i; j<=m; j++) {
+			// Read auxiliary variables for WLSp
+			if (type_VCR == "WLSp") {
+				Pj_relevant=valofexternal("P" + strofreal(j) + "_relevant")		
+				PPj = valofexternal("PP" + strofreal(j))
+				Xj = valofexternal("X" + strofreal(j))
+			}
 			
 			if (i == j) {
 	
@@ -63,11 +76,7 @@ real vector reg_sandwich_ttests(string scalar type_VCR, real scalar m, real scal
 					PThetaP = Big_P_relevant[(starti .. endi),(1 .. p)]'*M*Big_P_relevant[(startj .. endj),(1 .. p)]														
 				}
 				else if (type_VCR == "WLSp") {
-				 	PThetaP = st_matrix("P" + strofreal(i) + "_relevant")* ///
-										(-st_matrix("PP" + strofreal(i) )*st_matrix("X" + strofreal(j))'-st_matrix("X" + strofreal(i))*st_matrix("PP" + strofreal(j))' + st_matrix("X" + strofreal(i))*MXWTWXM*st_matrix("X" + strofreal(j))')* ///
-										st_matrix("P" + strofreal(j) + "_relevant")'
-					
-					
+				 	PThetaP = Pi_relevant * (-PPi*Xj' - Xi*PPj' + Xi*MXWTWXM*Xj') * Pj_relevant'
 				}
 				else if (type_VCR == "WLSa") {
 					PThetaP = Big_P_relevant[(starti .. endi),(1 .. p)]'*M*Big_P_relevant[(startj .. endj),(1 .. p)]

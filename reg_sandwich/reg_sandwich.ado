@@ -29,8 +29,6 @@ program define reg_sandwich, eclass sortpreserve
 	[noCONstant] ///
 	[Level(cilevel)]
 	
-	*timer clear 
-	*timer on 5
 	
 	*mark sample
     marksample touse
@@ -44,34 +42,22 @@ program define reg_sandwich, eclass sortpreserve
 	* Count valid observations and check matsize
 	qui count if `touse'
     local nobs = r(N)
-	if c(matsize)<`nobs' {
-		set matsize `nobs'
-	}
 	
    *specify the temporary variables used in the program
     tempvar cons wfinal    ///
      prime_resid  clusternumber  ///
-	theta
+	theta ///
+	selectvar
+	
+	* create placeholder for mata selection
+	qui: gen `selectvar'=.
 	   
     *specifiy the temporary scalars and matrixes
     tempname ///
-		X V b W ///
-		min_n max_n ///
-		M ///
-		MXWTWXM ///
-		XWAeeAWX Big_P_relevant Big_PThetaP_relevant Big_PP ///
-		PThetaP ///
-		Aj Wj Xj ej Bj ///
-		Tj ///
+		V b ///
 		_dfs  ///
-		cluster_list ///
-		C_ttest ///
-		Omega_ttest matrix_ttest ///
-		T Dj ///
-		b_temp ///
-		Pj_relevant  Pj_Theta_Pj_relevant ///
-		evecs evals sq_inv_Bj ///
-		PPj
+		cluster_list p ///
+		b_temp
 		
 
 
@@ -121,7 +107,7 @@ program define reg_sandwich, eclass sortpreserve
 	else {
 		_rmcoll `x' if `touse', noconstant
 	}
-	
+
     local x = r(varlist)
     foreach v in `olist' {
         local x = regexr("`x' ","o\.`v' ","")
@@ -150,11 +136,10 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	
-	** prep for small sample reduced t-test:		
-	matrix p = rowsof(e(V))
-	local p = p[1,1]
-	matrix drop p
-	
+	** prep for small sample reduced t-test:	
+	matrix `p' = rowsof(e(V))
+	local p = `p'[1,1]
+
 	if "`main_function'" == "areg" {
 		*ignore constant
 		local --p
@@ -179,12 +164,6 @@ program define reg_sandwich, eclass sortpreserve
     foreach j in `idlist' {
         local ++m
     }
-	
-	* double check set matsize:
-	if `nobs'<`m'*`p'{
-		local temp = `m'*`p'
-		set matsize `temp'
-	}
 	
 	
 	*weights & variance:
@@ -222,48 +201,36 @@ program define reg_sandwich, eclass sortpreserve
 
 	* Auxiliary matrices
 	*********************
+	mata: X = .
 	if "`constant'"=="" & "`main_function'" != "areg" {
-		mkmat `x' `cons' if `touse', matrix(`X')
-		matrix colnames `X' = `x' _cons
+		mata: st_view(X, ., "`x' `cons'","`touse'")
 	}
 	else{
-		mkmat `x'  if `touse', matrix(`X')
-		matrix colnames `X' = `x'
+		mata: st_view(X, ., "`x'","`touse'")
 	}
 	
 	if "`type_VCR'" =="OLS"{
-		*matrix `M' = invsym(`X'' * `X')
-		mata: st_matrix("`M'",invsym(st_matrix("`X'")' * st_matrix("`X'")))
-		matrix `MXWTWXM' =  `M'
+		mata: M = invsym(X' * X)
+		mata: MXWTWXM = M
 	} 
 	else {
-	
-		mkmat `wfinal' if `touse', matrix(`W')
-		matrix `W' = diag(`W')
-	
-		*matrix `M' = invsym(`X'' * `W' * `X')
-		mata: st_matrix("`M'",invsym(st_matrix("`X'")' * st_matrix("`W'") *st_matrix("`X'")))
-		
+		mata: W = diag(st_data(.,"`wfinal'","`touse'"))
+		mata: M = invsym(X' * W * X)
 	}
 				
 		
 	if "`type_VCR'" == "WLSp" {	
-		*matrix `MXWTWXM' =  `M'*`X''*`W'*`W'*`X'*`M'
-		mata: st_matrix("`MXWTWXM'", st_matrix("`M'")*st_matrix("`X'")'*st_matrix("`W'")*st_matrix("`W'")*st_matrix("`X'")*st_matrix("`M'"))
+		mata: MXWTWXM = M*X'*W*W*X*M
 	}
 	else if "`type_VCR'" == "WLSa" {
-		
-		mkmat `theta'   if `touse', matrix(`T')
-		matrix `T' = diag(`T')
-		matrix `MXWTWXM' =  `M'
-		matrix drop `T'
+		mata: MXWTWXM  =  M
 	}
 	
 	if "`type_VCR'" ~="OLS"{
-		matrix drop `W' 
+		mata: mata drop W
 	}
 	
-	matrix drop `X'
+	mata: mata drop X
 	
 	/********************************************************************/
     /*    Variance covariance matrix estimation for standard errors     */
@@ -272,24 +239,25 @@ program define reg_sandwich, eclass sortpreserve
     /********************************************************************/
 	qui: predict `prime_resid', residuals
 	
-	matrix `XWAeeAWX' = J(`p', `p', 0)
+	mata: XWAeeAWX = J(`p', `p', 0)
 		
 	local current_jcountFtest = 0
 	local first_cluster = 1
 	
+	mata: Xj = .
+	mata: ej = .
     foreach j in `idlist' {
+
+		qui: replace `selectvar' = `touse' & `clusternumber' == `j'
 		
 		if "`constant'"=="" & "`main_function'" != "areg" {
-			mkmat `x' `cons' if `touse' & `clusternumber' == `j', matrix(`Xj')
-			matrix colnames `Xj' = `x' _cons
+			mata: st_view(Xj, ., "`x' `cons'","`selectvar'")
 		} 
 		else {
-			mkmat `x'  if `touse' & `clusternumber' == `j', matrix(`Xj')
-			matrix colnames `Xj' = `x'
+			mata: st_view(Xj, ., "`x' ","`selectvar'")
 		}
 		
-		mkmat `theta' if `touse' & `clusternumber' == `j', matrix(`Tj')
-		matrix `Tj' = diag(`Tj')  
+		mata: Tj = diag(st_data(.,"`theta'","`selectvar'"))
 		
 		****Adjustment matrix
 		* 
@@ -307,49 +275,42 @@ program define reg_sandwich, eclass sortpreserve
 		* For WLSa, this simplified to (Wj*Tj = Ij):
 		* Dj*[Tj-Xj*M*Xj]*Dj
 				
-		if "`type_VCR'" == "OLS" {
-			*matrix `Bj'=`Tj'-`Xj'*`M'*`Xj''
-			mata: st_matrix("`Bj'",st_matrix("`Tj'")-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")')
+		if "`type_VCR'" == "OLS" {		
+			mata: Bj = Tj-Xj*M*Xj'
 		}
 		else if "`type_VCR'" == "WLSp" {
-			mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
-			matrix `Wj' = diag(`Wj')  
-			*matrix `Bj'=`Tj'-`Wj'*`Xj'*`M'*`Xj''-`Xj'*`M'*`Xj''*`Wj'+ `Xj'*`MXWTWXM'*`Xj''
-			mata: st_matrix("`Bj'", st_matrix("`Tj'")-st_matrix("`Wj'")*st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")'-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Wj'")+ st_matrix("`Xj'")*st_matrix("`MXWTWXM'")*st_matrix("`Xj'")')
+			mata: Wj = diag(st_data(.,"`wfinal'","`selectvar'"))
+			
+			mata: Bj =  Tj-Wj*Xj*M*Xj'-Xj*M*Xj'*Wj + Xj*MXWTWXM*Xj'
 		}
 		else if "`type_VCR'" == "WLSa" {
-			mkmat `wfinal' if `touse' & `clusternumber' == `j', matrix(`Wj')
-			matrix `Wj' = diag(`Wj')
-			matrix `Dj' = cholesky(`Tj')
-			*matrix `Bj' = `Dj''*(`Tj'-`Xj'*`M'*`Xj'')*`Dj'
-			mata: st_matrix("`Bj'", st_matrix("`Dj'")'*(st_matrix("`Tj'")-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")')*st_matrix("`Dj'"))
+			mata: Wj = diag(st_data(.,"`wfinal'","`selectvar'"))
+			mata: Dj = cholesky(Tj)
+			mata: Bj =  Dj'*(Tj-Xj*M*Xj')*Dj
 		}
 		
 		* Symmetric square root of the Moore-Penrose inverse of Bj
-		mat symeigen `evecs' `evals' = `Bj'
-		mata: st_matrix( "`sq_inv_Bj'", st_matrix( "`evecs'")*diag(editmissing(st_matrix( "`evals'"):^(-1/2),0))*st_matrix( "`evecs'")')
+		mata: evecs = .
+		mata: evals = .
+		mata: symeigensystem(Bj, evecs, evals)
+		mata: sq_inv_Bj =  evecs*diag(editmissing(evals:^(-1/2),0))*evecs'
 											
 		if "`type_VCR'" == "WLSa" {
-			*matrix `Aj' = `Dj'*(`sq_inv_Bj')*`Dj''
-			mata: st_matrix("`Aj'" , st_matrix("`Dj'")*(st_matrix("`sq_inv_Bj'"))*st_matrix("`Dj'")')
+			mata: Aj =  Dj*(sq_inv_Bj)*Dj'
 		}
 		else {
-			matrix `Aj' = (`sq_inv_Bj')
+			mata: Aj = sq_inv_Bj
 		}
-		matrix drop `sq_inv_Bj'	
+		mata: mata drop sq_inv_Bj
 		
-        mkmat `prime_resid' if `touse' & `clusternumber' == `j', matrix(`ej')
+		mata: st_view(ej, ., "`prime_resid' ","`selectvar'")
 		
 		if "`type_VCR'" == "OLS" {
-			*matrix `XWAeeAWX' = (`Xj'' * `Aj' * `ej' * `ej'' * `Aj' * `Xj') + `XWAeeAWX'
-			mata: st_matrix("`XWAeeAWX'",   (st_matrix("`Xj'")'* st_matrix("`Aj'") * st_matrix("`ej'") * st_matrix("`ej'")' * st_matrix("`Aj'") * st_matrix("`Xj'")) + st_matrix("`XWAeeAWX'"))
+			mata: XWAeeAWX = Xj' * Aj * ej * ej' * Aj * Xj + XWAeeAWX
 		}
 		else {
-		
-			*matrix `XWAeeAWX' = (`Xj'' * `Wj' * `Aj' * `ej' * `ej'' * `Aj' * `Wj' * `Xj') + `XWAeeAWX'
-			mata: st_matrix("`XWAeeAWX'",   (st_matrix("`Xj'")'* st_matrix("`Wj'")* st_matrix("`Aj'") * st_matrix("`ej'") * st_matrix("`ej'")' * st_matrix("`Aj'") * st_matrix("`Wj'")* st_matrix("`Xj'")) + st_matrix("`XWAeeAWX'"))
+			mata: XWAeeAWX = Xj' * Wj * Aj * ej * ej' * Aj * Wj * Xj + XWAeeAWX
 		}
-
 		
 		**** F-test:
 		* 
@@ -407,71 +368,50 @@ program define reg_sandwich, eclass sortpreserve
 		
 		
 		if "`type_VCR'" == "OLS" {
-			/*
-			matrix `Pj_Theta_Pj_relevant' = ///
-													`M'*`Xj''*`Aj'* ///
-													(`Bj')* ///
-													`Aj''*`Xj'*`M'' // p x p
-			*/
-			mata: st_matrix("`Pj_Theta_Pj_relevant'", st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Aj'")* (st_matrix("`Bj'"))* st_matrix("`Aj'")'*st_matrix("`Xj'")*st_matrix("`M'")') 
+			mata: Pj_Theta_Pj_relevant =  M*Xj'*Aj*Bj*Aj'*Xj*M'
 			// p x p
 														
-			*matrix `Pj_relevant' =  `M'*`Xj''*`Aj'*`Xj' // p x p
-			mata: st_matrix("`Pj_relevant'",  st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Aj'")*st_matrix("`Xj'") )
-		
-													
-
+			mata: Pj_relevant =   M*Xj'*Aj*Xj
+			// p x p
 		}
 		else if "`type_VCR'" == "WLSp" {	
-			/*
-			matrix `Pj_Theta_Pj_relevant' = ///
-													`M'*`Xj''*`Wj'*`Aj'* ///
-													(`Bj')* ///
-													`Aj''*`Wj'*`Xj'*`M'' // p x p
-			*/
-			mata: st_matrix("`Pj_Theta_Pj_relevant'", st_matrix("`M'")*st_matrix("`Xj'")'* st_matrix("`Wj'")* st_matrix("`Aj'")* (st_matrix("`Bj'"))* st_matrix("`Aj'")'* st_matrix("`Wj'")* st_matrix("`Xj'")*st_matrix("`M'")') 
-			
+
+			mata: Pj_Theta_Pj_relevant =  M* Xj'* Wj* Aj* Bj'* Aj'* Wj* Xj*M' 
+			// pxp
 													
-			*matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj' // p x kj
-			mata: st_matrix("`Pj_relevant'",  st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Wj'")*st_matrix("`Aj'") )
-			matrix P`current_jcountFtest'_relevant = `Pj_relevant'
+			mata: Pj_relevant =    M*Xj'*Wj*Aj
+			mata: P`current_jcountFtest'_relevant = Pj_relevant
 			
 			
-			*matrix `PPj' = `Wj'*`Xj'*`M' // kj x p
-			mata: st_matrix("`PPj'", st_matrix("`Wj'")*st_matrix("`Xj'")*st_matrix("`M'"))
-			matrix PP`current_jcountFtest' = `PPj'
+			mata: PPj = Wj*Xj*M
+			// kj x p
+			mata: PP`current_jcountFtest' = PPj
 		}
 		else if "`type_VCR'" == "WLSa" {
-			/*
-			matrix `Pj_Theta_Pj_relevant' = ///
-													`M'*`Xj''*`Wj'*`Aj'* ///
-													(`Tj'-`Xj'*`M'*`Xj'')* ///
-													`Aj''*`Wj'*`Xj'*`M'' //p x p
-			*/
-			mata: st_matrix("`Pj_Theta_Pj_relevant'", st_matrix("`M'")*st_matrix("`Xj'")'* st_matrix("`Wj'")* st_matrix("`Aj'")* (st_matrix("`Tj'")-st_matrix("`Xj'")*st_matrix("`M'")*st_matrix("`Xj'")')* st_matrix("`Aj'")'* st_matrix("`Wj'")* st_matrix("`Xj'")*st_matrix("`M'")') 
-			
+			mata: Pj_Theta_Pj_relevant = M*Xj'*Wj* Aj* (Tj-Xj*M*Xj')* Aj'* Wj* Xj*M' 
+			//p x p
 													
-			*matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj'*`Xj' // p x p
-			mata: st_matrix("`Pj_relevant'",  st_matrix("`M'")*st_matrix("`Xj'")'*st_matrix("`Wj'")*st_matrix("`Aj'")*st_matrix("`Xj'") )
+			mata: Pj_relevant =   M*Xj'*Wj*Aj*Xj
+			// p x p
 		}
 	
 	
 		
 		* save for later
 		if `first_cluster'==1 {
-			matrix `Big_PThetaP_relevant' = `Pj_Theta_Pj_relevant'
-			matrix `Big_P_relevant' = `Pj_relevant''
+			mata: Big_PThetaP_relevant = Pj_Theta_Pj_relevant
+			mata: Big_P_relevant = Pj_relevant'
 			if "`type_VCR'" == "WLSp" {
-				matrix `Big_PP' = `PPj'
+				mata: Big_PP = PPj
 			}
 			local first_cluster = 0
 		}
 		else {	
-			matrix `Big_PThetaP_relevant' = [`Big_PThetaP_relevant' \ `Pj_Theta_Pj_relevant']
-			matrix `Big_P_relevant' = [`Big_P_relevant' \ `Pj_relevant'']
+			mata: Big_PThetaP_relevant = (Big_PThetaP_relevant \ Pj_Theta_Pj_relevant)
+			mata: Big_P_relevant = (Big_P_relevant \ Pj_relevant')
 			
 			if "`type_VCR'" == "WLSp" {
-				matrix `Big_PP' = [`Big_PP' \ `PPj']
+				mata:  Big_PP = (Big_PP \ PPj)
 			
 			}
 		}
@@ -479,8 +419,30 @@ program define reg_sandwich, eclass sortpreserve
     }
 	
 	
+	mata: mata drop Xj
+	mata: mata drop ej
+	mata: mata drop Bj
+	mata: mata drop Tj
+	mata: mata drop evals
+	mata: mata drop evecs
+	mata: mata drop Aj
+	mata: mata drop Pj_Theta_Pj_relevant
+	mata: mata drop Pj_relevant
+	if "`type_VCR'" ~="OLS"{
+		mata: mata drop Wj
+	}
+	
+	if "`type_VCR'" == "WLSa" {
+		mata: mata drop Dj
+	}
+	if "`type_VCR'" == "WLSp" {
+		mata: mata drop PPj
+	}
+	
 	* RVE estimator
-	matrix `V' = `M' * `XWAeeAWX' * `M'
+	mata: st_matrix ("`V'" , M * XWAeeAWX * M)
+	mata: mata drop XWAeeAWX
+	
 	
 	* Tests:
 	if "`type_VCR'" == "WLSp" {
@@ -488,28 +450,30 @@ program define reg_sandwich, eclass sortpreserve
 			qui: tab `clusternumber' if `touse', matrow(`cluster_list')
 			forvalues i = 1/`m'{
 		
-				*tempname X`i'
+				qui: replace `selectvar' = `touse' & `clusternumber' == `cluster_list'[`i',1]
+				mata: X`i' = .
 				
 				if "`constant'"=="" & "`main_function'" != "areg" {
-					mkmat `x' `cons' if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')
+					mata: st_view(X`i', ., "`x' `cons'","`selectvar'")
 				} 
 				else {
-					mkmat `x'  if `touse' & `clusternumber' == `cluster_list'[`i',1], matrix(X`i')
+					mata: st_view(X`i', ., "`x'","`selectvar'")
 				}
 			}
 	}
 	
 	
 	* T-test, using as a special case of an F-test:
-	mata: st_matrix("`_dfs'", reg_sandwich_ttests("`type_VCR'", `m', `p', st_matrix("`Big_PThetaP_relevant'"),  st_matrix("`Big_P_relevant'"), st_matrix("`M'"),  st_matrix("`MXWTWXM'")))
+	mata: st_matrix("`_dfs'", reg_sandwich_ttests("`type_VCR'", `m', `p', Big_PThetaP_relevant,  Big_P_relevant, M,  MXWTWXM))
+	mata: mata drop M
 	* Clean
 	if "`type_VCR'" == "WLSp" {
 	
 			forvalues i = 1/`m'{
 		
-				matrix drop X`i'
-				matrix drop PP`i'
-				matrix drop P`i'_relevant
+				mata: mata drop X`i'
+				mata: mata drop PP`i'
+				mata: mata drop P`i'_relevant
 				
 			}
 	}
@@ -529,8 +493,7 @@ program define reg_sandwich, eclass sortpreserve
 
 	if "`main_function'" == "areg" {
 		if "`type_VCR'" == "WLSp" {
-			mkmat `x'  if `touse', matrix(`X')
-			matrix colnames `X' = `old_x'
+			mata: Ur = st_data(., "`x'","`touse'")
 		}
 		local x = "`old_x'"
 			
@@ -619,7 +582,6 @@ program define reg_sandwich, eclass sortpreserve
 
     display as text  "{hline 13}" "{c BT}" "{hline 64}" 
     
-
     /*********************/
     /*  post results     */
     /*********************/
@@ -652,19 +614,6 @@ program define reg_sandwich, eclass sortpreserve
 			ereturn local absvar = "`absorb'"
 	}
     
-	* Ftest	
-	ereturn matrix P_relevant = `Big_P_relevant' 
-	ereturn matrix PThetaP_relevant = `Big_PThetaP_relevant'
-	if "`type_VCR'" == "WLSp" {
-		ereturn matrix PP = `Big_PP'
-		if "`main_function'" == "areg" {
-			ereturn matrix Ur = `X'
-		}
-
-	}
-	
-
-	ereturn matrix MXWTWXM = `MXWTWXM'			
 	ereturn local indepvars `x'
 	
 	if "`constant'"=="" & "`main_function'" != "areg" {
