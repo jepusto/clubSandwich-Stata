@@ -54,23 +54,10 @@ program define reg_sandwich, eclass sortpreserve
 	   
     *specifiy the temporary scalars and matrixes
     tempname ///
-		X V b W ///
-		min_n max_n ///
-		M ///
-		MXWTWXM ///
-		XWAeeAWX Big_P_relevant Big_PThetaP_relevant Big_PP ///
-		PThetaP ///
-		Aj Wj Xj ej Bj ///
-		Tj ///
+		V b ///
 		_dfs  ///
-		cluster_list ///
-		C_ttest ///
-		Omega_ttest matrix_ttest ///
-		T Dj ///
-		b_temp ///
-		Pj_relevant  Pj_Theta_Pj_relevant ///
-		evecs evals sq_inv_Bj ///
-		PPj
+		cluster_list p ///
+		b_temp
 		
 
 
@@ -149,11 +136,10 @@ program define reg_sandwich, eclass sortpreserve
 	}
 	
 	
-	** prep for small sample reduced t-test:		
-	matrix p = rowsof(e(V))
-	local p = p[1,1]
-	matrix drop p
-	
+	** prep for small sample reduced t-test:	
+	matrix `p' = rowsof(e(V))
+	local p = `p'[1,1]
+
 	if "`main_function'" == "areg" {
 		*ignore constant
 		local --p
@@ -405,7 +391,6 @@ program define reg_sandwich, eclass sortpreserve
 			mata: Pj_Theta_Pj_relevant = M*Xj'*Wj* Aj* (Tj-Xj*M*Xj')* Aj'* Wj* Xj*M' 
 			//p x p
 													
-			*matrix `Pj_relevant' =  `M'*`Xj''*`Wj'*`Aj'*`Xj' // p x p
 			mata: Pj_relevant =   M*Xj'*Wj*Aj*Xj
 			// p x p
 		}

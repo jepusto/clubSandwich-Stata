@@ -25,21 +25,13 @@ program define test_sandwich, eclass byable(recall) sortpreserve
     set type double
     syntax [varlist(default=none)], [cons]
 	
-	tempname  C_Ftest ///
-			  gs gt temp_calc2 temp_calc  ///
-			 Omega_Ftest matrix_Ftest middle_Omega ///
-			 Big_P_relevant Big_PThetaP_relevant Pi_Theta_Pi Pi_relevant Pj_relevant Big_PP middle_PThetaP ///
-			 Fconstant ///
+	tempname cluster_list
+	
+	tempvar Fconstant ///
 			 clusternumber ///
-			 cluster_list ///
-			 cluster ///
-			 eta_Ftest ///
-			 Q_Ftest z_Ftest D_Ftest ///
-			 b V ///
-			 F_stat F_df1 F_df2 F_pvalue ///
-			 MXWTWXM ///
 			 temp_Ftest ///
-			 selectvar
+			 selectvar ///
+			 Q_Ftest
 
 	*verify that this is run after reg_sandwich:
 
@@ -220,8 +212,6 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 		
 		forvalues i = 1/`m'{
  						
-			tempname X`i' PP`i' P`i'_relevant
-			
 			local starti = `endi'+1
 			
 			if "`e(absorb)'"~=""{
@@ -317,7 +307,7 @@ program define test_sandwich, eclass byable(recall) sortpreserve
 	ereturn scalar F_eta = `eta_Ftest'	
 	
 	
-** Clean:
+	* Clean:
 	mata: mata drop sq_Omega_Ftest
 	mata: mata drop C_Ftest
 	mata: mata drop D_Ftest
