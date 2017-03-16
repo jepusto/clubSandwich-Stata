@@ -26,6 +26,11 @@
 {p 4 6 2}
 {cmd:test_sandwich} uses the supporting mata function
 test_sandwich_ftests.mo{p_end}
+{p 4 6 2}
+{it:* please note that {cmd:test_sandwich} uses the mata workspace for intermediate calculations.}
+{it:This can potentially cause conflict with existing matrices. This affects matrices named }
+{it:sq_Omega_Ftest, C_Ftest, D_Ftest, Omega_Ftest, V, b, evals, evecs, matrix_Ftest, z_Ftest }
+{it:and names of the form X*, PP*, P*_relevant, where * can be any real integer.}{p_end}
 
 {p 4 6 2}
 see also {help reg_sandwich}{p_end}
