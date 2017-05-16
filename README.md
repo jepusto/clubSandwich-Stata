@@ -19,5 +19,6 @@ install.packages("clubSandwich")
 
 To install the latest development version directly from Github, type:
 ```{r}
-net install github, from("https://jepusto.github.io/clubSandwich-Stata/")
+net install github, from("https://haghish.github.io/github/")
+github install jepusto/clubSandwich-Stata
 ```
