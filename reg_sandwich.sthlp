@@ -4,7 +4,7 @@
 {title:Title}
 
 {phang}
-{bf:reg_sandwich} {hline 2}  Linear regression with clubSandwich standard errors and small-sample t-tests for each coefficient. 
+{bf:reg_sandwich} {hline 2}  Linear regression with small-sample corrections for cluster-robust standard errors and t-tests
 
 {marker syntax}{...}
 {title:Syntax}
@@ -51,9 +51,7 @@ see also {help test_sandwich}{p_end}
 {title:Description}
 
 {pstd}
-HERE COMES THE DETAILED DESCRIPTION.
-{cmd: reg_sandwich} fits a linear regression using {help regress}, optionally passing aweights or pweights (see {help weight}). If {it:absorb} is provided regression are fitted using {help areg}.
-
+{cmd: reg_sandwich} fits a linear regression using {help regress}, optionally passing aweights or pweights (see {help weight}). If {it:absorb} is provided, the regression are fitted using {help areg}. Standard errors are based on a version of the bias-reduced linearization estimator proposed by Bell and McCaffrey (2002) and further developed by Tipton and Pustejovsky (2015) and Pustejovsky and Tipton (2016). t-tests for each coefficient in the model are calculated based on a Satterthwaite-type approximation, as described in Pustejovsky and Tipton (2016). 
 
 
 {title:Arguments}
@@ -81,8 +79,8 @@ HERE COMES THE DETAILED DESCRIPTION.
 
 {title:Examples}
 
-{phang}{cmd:. use MortalityRates.dta}{p_end}
-{phang}{cmd:. keep if cause == 2} {p_end}
+{phang}{cmd:. use http://masteringmetrics.com/wp-content/uploads/2015/01/deaths.dta}{p_end}
+{phang}{cmd:. keep if dtype == 2 & agegr == 2} {p_end}
 {phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year, nocon cluster(state)}{p_end}
 {phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [aweight=pop], nocon cluster(state)}{p_end}
 {phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year [pweight=pop], nocon cluster(state)}{p_end}
@@ -173,16 +171,13 @@ Journal of Business and Economic Statistics. In Press. DOI: 10.1080/07350015.201
 {p_end}
 
 {phang}
-Github repository:  {browse "https://github.com/jepusto/clubSandwich-Stata"} {p_end}
-
-{phang}
-Elizabeth Tipton and James E. Pustejovsky, 2015. Small-sample adjustments for tests of moderators and model fit 
+Tipton, Elizabeth and James E. Pustejovsky (2015). Small-sample adjustments for tests of moderators and model fit 
 using robust variance estimation in meta-regression. Journal of Educational and Behavioral Statistics December 2015 vol. 40 no. 6 604-634. 
 DOI: 10.3102/1076998615606099
 {p_end}
 
 {phang}
-Bell, R. M., & McCaffrey, D. F. (2002). Bias reduction in standard errors for linear regression with multi-stage samples. 
+Bell, R. M., & Daniel M. McCaffrey (2002). Bias reduction in standard errors for linear regression with multi-stage samples. 
 Survey Methodology, 28(2), 169–181. 
 Retrieved from {browse "http://www.statcan.gc.ca/pub/12-001-x/2002002/article/9058-eng.pdf"}
 {p_end}

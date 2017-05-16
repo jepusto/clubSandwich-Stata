@@ -4,7 +4,7 @@
 {title:Title}
 
 {phang}
-{bf:test_sandwich} {hline 2} Computes small sample corrected F-test of parameters estimated by {help reg_sandwich}
+{bf:test_sandwich} {hline 2} Computes Wald-type tests of parameters estimated by {help reg_sandwich}, using a bias-reduced linearization estimator and small-sample corrections to the test statistic and reference distribution.
 
 
 {marker syntax}{...}
@@ -40,7 +40,7 @@ see also {help reg_sandwich}{p_end}
 
 {pstd}
 {cmd:test_sandwich} is a post-estimation command to be run after {help reg_sandwich}. 
-It computes a small sample corrected F-test of parameters included in {varlist}, using the same sample and weights as in the {it:reg_sandwich} estimation
+It computes a small-sample corrected Wald test of parameters included in {varlist}, using the same sample and weights as in the {it:reg_sandwich} estimation. The variance-covariance matrix of the parameters is based on on a version of the bias-reduced linearization estimator proposed by Bell and McCaffrey (2002) and further developed by Tipton and Pustejovsky (2015) and Pustejovsky and Tipton (2016). The small sample corrections, termed the "approximate Hotelling's T-squared test" by Pustejovsky and Tipton (2016), involve adjustments to both the Wald test statistic and to the reference distribution. The reference distribution is a multiple of an F distribution with numerator degrees of freedom equal to the number of parameter restrictions and denominator degrees of freedom approximated based on a working model for the variance structure.
 
 
 {marker options}{...}
@@ -61,9 +61,9 @@ Parameters included in {varlist} need to have been estimated by {it:reg_sandwich
 
 {marker examples}{...}
 {title:Examples}
-{phang}{cmd:. use MortalityRates.dta}{p_end}
-{phang}{cmd:. keep if cause == 2} {p_end}
-{phang}{cmd:. xi, noomit: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year, nocon cluster(state)}{p_end}
+{phang}{cmd:. use http://masteringmetrics.com/wp-content/uploads/2015/01/deaths.dta}{p_end}
+{phang}{cmd:. keep if dtype == 2 & agegr == 2} {p_end}
+{phang}{cmd:. xi: reg_sandwich mrate legal beertaxa beerpercap winepercap i.year, cluster(state) absorb(state)}{p_end}
 {phang}{cmd:. test_sandwich legal beertaxa}{p_end}
 
 
@@ -102,9 +102,6 @@ Pustejovsky, James E. & Elizabeth Tipton (2016).
 Small sample methods for cluster-robust variance estimation and hypothesis testing in fixed effects models. 
 Journal of Business and Economic Statistics. In Press. DOI: 10.1080/07350015.2016.1247004
 {p_end}
-
-{phang}
-Github repository:  {browse "https://github.com/jepusto/clubSandwich-Stata"} {p_end}
 
 {phang}
 Elizabeth Tipton and James E. Pustejovsky, 2015. Small-sample adjustments for tests of moderators and model fit 

@@ -14,7 +14,7 @@ distribution.
 
 The package is available on the SSC Archive. To install it, type 
 ```{r}
-install.packages("clubSandwich")
+ssc install clubSandwich
 ```
 
 To install the latest development version directly from Github, type:
