@@ -39,10 +39,14 @@ allowed; see {help weight}.{p_end}
 {p 4 6 2}
 {cmd:reg_sandwich} uses the supporting mata function
 reg_sandwich_ttests.mo{p_end}
+{p 4 6 2}
+{it:* please note that {cmd:reg_sandwich} uses the mata workspace for intermediate calculations and to store large matrices for F-testing.}
+{it:This can potentially cause conflict with existing matrices. This affects matrices named }
+{it:W, Wj, X, Xj,  ej, sq_inv_Bj, Bj, Tj, evals, evecs, Aj, Pj_Theta_Pj_relevant, Pj_relevant, Dj, PPj, XWAeeAWX, M }
+{it:and names of the form X*, PP*, P*_relevant, where * can be any real integer.}{p_end}
 
 {p 4 6 2}
 see also {help test_sandwich}{p_end}
-
 
 {title:Description}
 
@@ -50,7 +54,7 @@ see also {help test_sandwich}{p_end}
 HERE COMES THE DETAILED DESCRIPTION.
 {cmd: reg_sandwich} fits a linear regression using {help regress}, optionally passing aweights or pweights (see {help weight}). If {it:absorb} is provided regression are fitted using {help areg}.
 
-{p_end}
+
 
 {title:Arguments}
 
@@ -130,15 +134,18 @@ HERE COMES THE DETAILED DESCRIPTION.
 {synopt:{cmd:e(V)}}variance-covariance matrix of the estimators{p_end}
 {synopt:{cmd:e(dfs)}}Degrees of freedom for effects{p_end}
 
+{synoptset 20 tabbed}{...}
+{p2col 5 20 24 2: Functions}{p_end}
+{synopt:{cmd:e(sample)}}marks estimation sample{p_end}
+
+{pstd}
+{it:{cmd:re_sandwich} saves the following in the mata workspace}:
+
 {synopt:{cmd:e(MXWTWXM)}}auxiliary matrix used for F-testing{p_end}
 {synopt:{cmd:e(PThetaP_relevant)}}auxiliary matrix used for F-testing{p_end}
 {synopt:{cmd:e(P_relevant)}}auxiliary matrix used for F-testing{p_end}
 {synopt:{cmd:e(PP)}}auxiliary matrix used for F-testing (used for p-weights only){p_end}
 
-
-{synoptset 20 tabbed}{...}
-{p2col 5 20 24 2: Functions}{p_end}
-{synopt:{cmd:e(sample)}}marks estimation sample{p_end}
 
 {title:Citation}
 {phang}
