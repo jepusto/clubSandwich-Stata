@@ -14,9 +14,13 @@ hypotheses use an approximation to Hotelling's T-squared distribution.
 
 # Installing clubSandwich
 
-The package is available on the SSC Archive. To install it, type ```{r} ssc
-install clubSandwich ```
+The package is available on the SSC Archive. To install it, type 
+```
+ssc install clubSandwich 
+```
 
-To install the latest development version directly from Github, type: ```{r} net
-install github, from("https://haghish.github.io/github/") github install
-jepusto/clubSandwich-Stata ```
+To install the latest development version directly from Github, type: 
+```
+net install github, from("https://haghish.github.io/github/") 
+github install jepusto/clubSandwich-Stata 
+```
