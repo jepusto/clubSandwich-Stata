@@ -1,0 +1,3 @@
+v 0.1
+d 'clubSandwich': Cluster-robust (sandwich) variance estimators with small-sample corrections
+p clubSandwich

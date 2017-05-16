@@ -1,0 +1,10 @@
+d 'clubSandwich': Cluster-robust (sandwich) variance estimators with small-sample corrections
+d
+d Distribution-Date: 20170516
+d
+F reg_sandwich.ado
+F reg_sandwich.sthlp
+F reg_sandwich_ttests.mo
+F test_sandwich.ado
+F test_sandwich.sthlp
+F test_sandwich_ftests.mo
