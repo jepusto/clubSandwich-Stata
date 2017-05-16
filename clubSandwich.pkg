@@ -1,5 +1,17 @@
-d 'clubSandwich': Cluster-robust (sandwich) variance estimators with small-sample corrections
+d 'clubSandwich': Cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression
 d
+d `clubSandwich` provides cluster-robust variance estimators (i.e., sandwich
+d estimators) for ordinary and weighted least squares linear regression models. 
+d Several adjustments are incorporated to improve small-sample performance. The
+d package includes functions for estimating linear regression models with
+d cluster-robust variance-covariance matrices and for testing single- and
+d multiple-contrast hypotheses based on Wald test statistics. Variance-covariance
+d estimators are based on a version of the bias-reduced linearization estimator
+d proposed by Bell and McCaffrey (2002) and further developed by Tipton and
+d Pustejovsky (2015) and Pustejovsky and Tipton (2016). Tests of single regression
+d coefficients use Satterthwaite corrections. Tests of multiple-contrast
+d hypotheses use an approximation to Hotelling's T-squared distribution.
+d 
 d Distribution-Date: 20170516
 d
 F reg_sandwich.ado
