@@ -21,11 +21,11 @@ display "The goal of theses tests is to check if the coefficients, se and dfs ar
 display "To match aweights with R, R pop needs to be divided by 100"
 display "DateTime: $S_DATE $S_TIME"
 
-use "MortalityRates", replace
-
-* filter: cause=="Motor Vehicle"
-label list cause
-keep if cause == 2
+use http://masteringmetrics.com/wp-content/uploads/2015/01/deaths.dta
+* filter: cause=="Motor Vehicle" and age-group=="18-21"
+label list dtype
+label list agegr
+keep if dtype == 2 & agegr == 2
 
 * model specification
 

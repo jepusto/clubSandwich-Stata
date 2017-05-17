@@ -12,6 +12,19 @@ Pustejovsky (2015) and Pustejovsky and Tipton (2016). Tests of single regression
 coefficients use Satterthwaite corrections. Tests of multiple-contrast
 hypotheses use an approximation to Hotelling's T-squared distribution.
 
+### Requirements
+
+* Stata version 14.2 
+* matsqrt from http://www.stata.com/users/jpitblado
+
+### Authors
+
+Marcelo Tyszler. Sustainable Economic Development and Gender, Royal Tropical Institute, Netherlands. m.tyszler@kit.nl
+
+James E. Pustejovsky (maintainer). Department of Education Psychology, University of Texas at Austin. pusto@austin.utexas.edu
+
+Elizabeth Tipton. Department of Human Development, Teachers College, Columbia University. tipton@tc.columbia.edu
+
 # Installing clubSandwich
 
 The package is available on the SSC Archive. To install it, type 
