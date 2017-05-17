@@ -2,8 +2,7 @@
 
 `clubSandwich` provides cluster-robust variance estimators (i.e., sandwich
 estimators) for ordinary and weighted least squares linear regression models. 
-Several adjustments are incorporated to improve small-sample performance. The
-package includes functions for estimating linear regression models with
+Several adjustments are incorporated to improve small-sample performance. (We like to think of these adjustments as extra cheese, sprouts, bacon, etc. in the middle of the sandwich estimator.) The package includes functions for estimating linear regression models with
 cluster-robust variance-covariance matrices and for testing single- and
 multiple-contrast hypotheses based on Wald test statistics. Variance-covariance
 estimators are based on a version of the bias-reduced linearization estimator
