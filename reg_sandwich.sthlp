@@ -53,6 +53,7 @@ see also {help test_sandwich}{p_end}
 {pstd}
 {cmd: reg_sandwich} fits a linear regression using {help regress}, optionally passing aweights or pweights (see {help weight}). If {it:absorb} is provided, the regression are fitted using {help areg}. Standard errors are based on a version of the bias-reduced linearization estimator proposed by Bell and McCaffrey (2002) and further developed by Tipton and Pustejovsky (2015) and Pustejovsky and Tipton (2016). t-tests for each coefficient in the model are calculated based on a Satterthwaite-type approximation, as described in Pustejovsky and Tipton (2016). 
 
+{pstd}
 Note that if {it:absorb} is provided, the absorbed fixed effects are NOT taken into account when calculating the bias-reduced linearization estimator. That is, the small-sample corrections are calculated based on the matrix of covariates after absorbing the fixed effects. This can create (typically very small) differences in the cluster-robust standard errors and hypothesis tests depending on whether fixed effects are absorbed or are included as dummy variables. 
 
 {title:Arguments}
