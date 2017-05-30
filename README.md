@@ -26,9 +26,9 @@ Elizabeth Tipton. Department of Human Development, Teachers College, Columbia Un
 
 # Installing clubSandwich
 
-The package is available on the SSC Archive. To install it, type 
+The package is available on the SSC Archive, under the name `reg_sandwich`. To install it, type 
 ```
-ssc install clubSandwich 
+ssc install reg_sandwich 
 ```
 
 To install the latest development version directly from Github, type: 
