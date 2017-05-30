@@ -12,7 +12,7 @@ d Pustejovsky (2015) and Pustejovsky and Tipton (2016). Tests of single regressi
 d coefficients use Satterthwaite corrections. Tests of multiple-contrast
 d hypotheses use an approximation to Hotelling's T-squared distribution.
 d 
-d Distribution-Date: 20170516
+d Distribution-Date: 20170530
 d
 F reg_sandwich.ado
 F reg_sandwich.sthlp

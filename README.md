@@ -14,7 +14,6 @@ hypotheses use an approximation to Hotelling's T-squared distribution.
 ### Requirements
 
 * Stata version 14.2 
-* matsqrt from http://www.stata.com/users/jpitblado
 
 ### Authors
 

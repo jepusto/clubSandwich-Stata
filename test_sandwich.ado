@@ -8,19 +8,6 @@ capture program drop test_sandwich
 program define test_sandwich, eclass byable(recall) sortpreserve
 	version 14.2 
 	
-	* verify matqrt is installed:
-	capture which matsqrt
-	if _rc!=0 {
-		display as text "Package {it:matsqrt} is missing. Trying to install..."
-		capture net install matsqrt.pkg, from (http://www.stata.com/users/jpitblado)
-		if _rc!=0 {
-			display as error "You need the package {it:matsqrt}, but an error occurred while trying to install it:"
-			error _rc
-		}
-		display as text "Install successful" _newline
-	}
-
-
 
     set type double
     syntax [varlist(default=none)], [cons]

@@ -1,8 +1,8 @@
-------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
       name:  <unnamed>
        log:  C:\Users\jep2963\Documents\R\clubSandwich-Stata\tests\wrapper_tests_log.txt
   log type:  text
- opened on:  16 May 2017, 14:53:03
+ opened on:  30 May 2017, 15:59:34
 
 . ***********************************************
 . display "Tests if the wrapper reg_sandwich is calling the appropriate functions"
@@ -15,22 +15,14 @@ The goal of theses tests is to check if the coefficients, se and dfs are being p
 To match aweights with R, R pop needs to be divided by 100
 
 . display "DateTime: $S_DATE $S_TIME"
-DateTime: 16 May 2017 14:53:03
+DateTime: 30 May 2017 15:59:34
 
 . 
-. use "MortalityRates", replace
+. use http://masteringmetrics.com/wp-content/uploads/2015/01/deaths.dta
 
-. 
-. * filter: cause=="Motor Vehicle"
-. label list cause
-cause:
-           1 All
-           2 Motor Vehicle
-           3 Suicide
-           4 Internal
-
-. keep if cause == 2
-(4,131 observations deleted)
+. * filter: cause=="Motor Vehicle" and age-group=="18-21"
+. keep if dtype == 2 & agegr == 2
+(23,409 observations deleted)
 
 . 
 . * model specification
@@ -113,9 +105,9 @@ scalars:
 
 macros:
                 e(cmd) : "reg_sandwich"
-            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_*, nocons cluster(sta.."
+            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_*, nocons cluster(state)"
       e(constant_used) : "0"
-          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973.."
+          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1.."
            e(clustvar) : "state"
             e(vcetype) : "Robust"
                 e(vce) : "cluster"
@@ -286,18 +278,18 @@ Small Sample Corrected F-test:
 Timers:
 
 . timer list
-   1:      0.36 /        1 =       0.3650
-   2:      0.14 /        1 =       0.1400
-   3:      0.14 /        1 =       0.1410
-   4:      0.16 /        1 =       0.1560
-   5:      0.16 /        1 =       0.1560
-   6:      0.14 /        1 =       0.1410
-   7:      0.17 /        1 =       0.1720
-   8:      0.33 /        1 =       0.3280
-   9:      0.30 /        1 =       0.2970
-  10:      0.31 /        1 =       0.3130
-  11:      0.30 /        1 =       0.2970
-  12:      0.48 /        1 =       0.4840
+   1:      0.33 /        1 =       0.3260
+   2:      0.16 /        1 =       0.1590
+   3:      0.16 /        1 =       0.1620
+   4:      0.16 /        1 =       0.1630
+   5:      0.16 /        1 =       0.1630
+   6:      0.16 /        1 =       0.1580
+   7:      0.16 /        1 =       0.1620
+   8:      0.32 /        1 =       0.3200
+   9:      0.32 /        1 =       0.3210
+  10:      0.32 /        1 =       0.3190
+  11:      0.32 /        1 =       0.3190
+  12:      0.54 /        1 =       0.5350
 
 . timer clear
 
@@ -372,9 +364,9 @@ scalars:
 
 macros:
                 e(cmd) : "reg_sandwich"
-            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [aweight=pop], noco.."
+            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [aweight=pop], nocons cluste.."
       e(constant_used) : "0"
-          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973.."
+          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1.."
                e(wexp) : "= pop"
               e(wtype) : "aweight"
            e(clustvar) : "state"
@@ -546,18 +538,18 @@ Small Sample Corrected F-test:
 Timers:
 
 . timer list
-   1:      0.36 /        1 =       0.3590
-   2:      0.14 /        1 =       0.1410
-   3:      0.14 /        1 =       0.1410
-   4:      0.14 /        1 =       0.1400
-   5:      0.16 /        1 =       0.1570
-   6:      0.16 /        1 =       0.1560
-   7:      0.14 /        1 =       0.1400
-   8:      0.30 /        1 =       0.2970
-   9:      0.31 /        1 =       0.3130
-  10:      0.30 /        1 =       0.2970
-  11:      0.28 /        1 =       0.2810
-  12:      0.52 /        1 =       0.5160
+   1:      0.37 /        1 =       0.3710
+   2:      0.16 /        1 =       0.1610
+   3:      0.16 /        1 =       0.1590
+   4:      0.16 /        1 =       0.1630
+   5:      0.16 /        1 =       0.1630
+   6:      0.16 /        1 =       0.1590
+   7:      0.16 /        1 =       0.1620
+   8:      0.32 /        1 =       0.3200
+   9:      0.33 /        1 =       0.3330
+  10:      0.33 /        1 =       0.3250
+  11:      0.32 /        1 =       0.3230
+  12:      0.54 /        1 =       0.5360
 
 . timer clear
 
@@ -632,9 +624,9 @@ scalars:
 
 macros:
                 e(cmd) : "reg_sandwich"
-            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [pweight=pop], noco.."
+            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [pweight=pop], nocons cluste.."
       e(constant_used) : "0"
-          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973.."
+          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1.."
                e(wexp) : "= pop"
               e(wtype) : "pweight"
            e(clustvar) : "state"
@@ -806,18 +798,18 @@ Small Sample Corrected F-test:
 Timers:
 
 . timer list
-   1:      0.53 /        1 =       0.5330
-   2:      0.36 /        1 =       0.3590
-   3:      0.34 /        1 =       0.3440
-   4:      0.41 /        1 =       0.4060
-   5:      0.39 /        1 =       0.3910
-   6:      0.42 /        1 =       0.4220
-   7:      0.41 /        1 =       0.4060
-   8:      0.85 /        1 =       0.8540
-   9:      0.87 /        1 =       0.8740
-  10:      0.87 /        1 =       0.8700
-  11:      0.95 /        1 =       0.9500
-  12:      1.41 /        1 =       1.4050
+   1:      0.56 /        1 =       0.5640
+   2:      0.40 /        1 =       0.4010
+   3:      0.40 /        1 =       0.3960
+   4:      0.40 /        1 =       0.4020
+   5:      0.40 /        1 =       0.3990
+   6:      0.40 /        1 =       0.3990
+   7:      0.40 /        1 =       0.4000
+   8:      0.76 /        1 =       0.7600
+   9:      0.78 /        1 =       0.7760
+  10:      0.78 /        1 =       0.7830
+  11:      0.77 /        1 =       0.7690
+  12:      1.29 /        1 =       1.2860
 
 . timer clear
 
@@ -830,8 +822,8 @@ WARNING: areg has no 'noconstant' option, therefore the values for the dummies a
 
 . 
 . * unweighted
-. * ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("sta
-> te","year"))
+. * ols_within <- plm(update(specification, . ~ . - 0), data = MV_Mortality, effect = "individual", index = c("state","year
+> "))
 . *xi: areg `specification', absorb(state) cluster(state)
 . 
 . * compare results with explicit dummies
@@ -1001,9 +993,9 @@ scalars:
 
 macros:
                 e(cmd) : "reg_sandwich"
-            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_*, absorb(state) clus.."
+            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_*, absorb(state) cluster(state)"
       e(constant_used) : "0"
-          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1974.."
+          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1974 _Iyear_1.."
              e(absvar) : "state"
            e(clustvar) : "state"
             e(vcetype) : "Robust"
@@ -1174,18 +1166,18 @@ Small Sample Corrected F-test:
 Timers:
 
 . timer list
-   1:      0.72 /        1 =       0.7230
-   2:      0.16 /        1 =       0.1550
-   3:      0.16 /        1 =       0.1590
-   4:      0.16 /        1 =       0.1600
-   5:      0.16 /        1 =       0.1600
-   6:      0.16 /        1 =       0.1620
-   7:      0.16 /        1 =       0.1610
-   8:      0.35 /        1 =       0.3520
-   9:      0.35 /        1 =       0.3460
-  10:      0.32 /        1 =       0.3240
-  11:      0.31 /        1 =       0.3110
-  12:      0.56 /        1 =       0.5550
+   1:      0.77 /        1 =       0.7740
+   2:      0.16 /        1 =       0.1570
+   3:      0.17 /        1 =       0.1750
+   4:      0.16 /        1 =       0.1570
+   5:      0.15 /        1 =       0.1520
+   6:      0.15 /        1 =       0.1540
+   7:      0.16 /        1 =       0.1580
+   8:      0.30 /        1 =       0.3050
+   9:      0.30 /        1 =       0.3050
+  10:      0.31 /        1 =       0.3070
+  11:      0.31 /        1 =       0.3070
+  12:      0.52 /        1 =       0.5190
 
 . timer clear
 
@@ -1364,9 +1356,9 @@ scalars:
 
 macros:
                 e(cmd) : "reg_sandwich"
-            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [aweight=pop], abso.."
+            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [aweight=pop], absorb(state).."
       e(constant_used) : "0"
-          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973.."
+          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1.."
              e(absvar) : "state"
                e(wexp) : "= pop"
               e(wtype) : "aweight"
@@ -1539,18 +1531,18 @@ Small Sample Corrected F-test:
 Timers:
 
 . timer list
-   1:      0.88 /        1 =       0.8780
-   2:      0.16 /        1 =       0.1600
-   3:      0.16 /        1 =       0.1560
-   4:      0.15 /        1 =       0.1500
-   5:      0.16 /        1 =       0.1620
-   6:      0.16 /        1 =       0.1640
-   7:      0.17 /        1 =       0.1660
-   8:      0.29 /        1 =       0.2950
-   9:      0.29 /        1 =       0.2860
-  10:      0.32 /        1 =       0.3240
-  11:      0.33 /        1 =       0.3280
-  12:      0.52 /        1 =       0.5240
+   1:      0.84 /        1 =       0.8450
+   2:      0.17 /        1 =       0.1700
+   3:      0.19 /        1 =       0.1870
+   4:      0.16 /        1 =       0.1610
+   5:      0.16 /        1 =       0.1570
+   6:      0.16 /        1 =       0.1600
+   7:      0.16 /        1 =       0.1610
+   8:      0.32 /        1 =       0.3230
+   9:      0.33 /        1 =       0.3340
+  10:      0.32 /        1 =       0.3150
+  11:      0.32 /        1 =       0.3170
+  12:      0.53 /        1 =       0.5250
 
 . timer clear
 
@@ -1726,9 +1718,9 @@ scalars:
 
 macros:
                 e(cmd) : "reg_sandwich"
-            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [pweight=pop], abso.."
+            e(cmdline) : "reg_sandwich mrate legal beertaxa beerpercap winepercap _Iyear_* [pweight=pop], absorb(state).."
       e(constant_used) : "0"
-          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973.."
+          e(indepvars) : "legal beertaxa beerpercap winepercap _Iyear_1970 _Iyear_1971 _Iyear_1972 _Iyear_1973 _Iyear_1.."
              e(absvar) : "state"
                e(wexp) : "= pop"
               e(wtype) : "pweight"
@@ -1905,18 +1897,18 @@ Small Sample Corrected F-test:
 Timers:
 
 . timer list
-   1:      1.15 /        1 =       1.1490
-   2:      0.40 /        1 =       0.3970
-   3:      0.38 /        1 =       0.3760
-   4:      0.40 /        1 =       0.3950
-   5:      0.39 /        1 =       0.3870
-   6:      0.39 /        1 =       0.3850
+   1:      1.16 /        1 =       1.1640
+   2:      0.41 /        1 =       0.4110
+   3:      0.38 /        1 =       0.3780
+   4:      0.39 /        1 =       0.3890
+   5:      0.37 /        1 =       0.3740
+   6:      0.40 /        1 =       0.3970
    7:      0.40 /        1 =       0.4040
-   8:      0.78 /        1 =       0.7800
+   8:      0.77 /        1 =       0.7720
    9:      0.77 /        1 =       0.7740
-  10:      0.74 /        1 =       0.7360
-  11:      0.74 /        1 =       0.7410
-  12:      1.23 /        1 =       1.2250
+  10:      0.79 /        1 =       0.7860
+  11:      0.80 /        1 =       0.8030
+  12:      1.27 /        1 =       1.2730
 
 . timer clear
 
@@ -1926,5 +1918,5 @@ Timers:
       name:  <unnamed>
        log:  C:\Users\jep2963\Documents\R\clubSandwich-Stata\tests\wrapper_tests_log.txt
   log type:  text
- closed on:  16 May 2017, 14:53:38
-------------------------------------------------------------------------------------------------------------------
+ closed on:  30 May 2017, 16:00:11
+---------------------------------------------------------------------------------------------------------------------------
