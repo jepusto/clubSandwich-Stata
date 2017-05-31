@@ -40,4 +40,4 @@ github install jepusto/clubSandwich-Stata
 
 Please cite the package as follows:
 
-    Tyszler, M., Pustejovsky, J. E., & Tipton, E. 2017. REG_SANDWICH: Stata module to compute cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression, Statistical Software Components S458352, Boston College Department of Economics. URL: https://ideas.repec.org/c/boc/bocode/s458352.html
+> Tyszler, M., Pustejovsky, J. E., & Tipton, E. 2017. REG_SANDWICH: Stata module to compute cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression, Statistical Software Components S458352, Boston College Department of Economics. URL: https://ideas.repec.org/c/boc/bocode/s458352.html
