@@ -153,8 +153,7 @@ Note that if {it:absorb} is provided, the absorbed fixed effects are NOT taken i
 Please cite it as such:{p_end}
 
 {phang}
-Tyszler, M., Pustejovsky, J.E., Tipton, E. 2017. clubSandwich: Cluster-robust variance estimation and hypothesis testing with small-sample corrections for linear regression. 
-URL: {browse "https://github.com/jepusto/clubSandwich-Stata"}
+Tyszler, M., Pustejovsky, J. E., & Tipton, E. 2017. REG_SANDWICH: Stata module to compute cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression, Statistical Software Components S458352, Boston College Department of Economics. URL: {browse "https://ideas.repec.org/c/boc/bocode/s458352.html"}
 {p_end}
 
 {title:Authors}
