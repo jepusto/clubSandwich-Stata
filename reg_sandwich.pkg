@@ -1,6 +1,6 @@
-d 'clubSandwich': Cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression
+d 'REG_SANDWICH': Stata module to compute cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression
 d
-d `clubSandwich` provides cluster-robust variance estimators (i.e., sandwich
+d 'reg_sandwich' provides cluster-robust variance estimators (i.e., sandwich
 d estimators) for ordinary and weighted least squares linear regression models. 
 d Several adjustments are incorporated to improve small-sample performance. The
 d package includes functions for estimating linear regression models with

@@ -1,6 +1,6 @@
-# Stata implementation of clubSandwich
+# `REG_SANDWICH`: Stata module to compute cluster-robust (sandwich) variance estimators with small-sample corrections for linear regression
 
-`clubSandwich` provides cluster-robust variance estimators (i.e., sandwich
+`reg_sandwich` provides cluster-robust variance estimators (i.e., sandwich
 estimators) for ordinary and weighted least squares linear regression models. 
 Several adjustments are incorporated to improve small-sample performance. (We like to think of these adjustments as extra cheese, sprouts, bacon, etc. in the middle of the sandwich estimator.) The package includes functions for estimating linear regression models with
 cluster-robust variance-covariance matrices and for testing single- and
@@ -23,7 +23,7 @@ James E. Pustejovsky (maintainer). Department of Education Psychology, Universit
 
 Elizabeth Tipton. Department of Human Development, Teachers College, Columbia University. tipton@tc.columbia.edu
 
-# Installing clubSandwich
+### Installing `reg_sandwich`
 
 The package is available on the SSC Archive, under the name `reg_sandwich`. To install it, type 
 ```
